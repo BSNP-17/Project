@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.toast-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeInOverlay 0.3s ease-out;
+}
+
+.success-toast {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 28px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  box-shadow: 
+    0 35px 70px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  animation: toastSlideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-family: 'Poppins', sans-serif;
+}
+
+.checkmark-container {
+  margin-bottom: 1.5rem;
+}
+
+.checkmark-circle {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.checkmark-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.checkmark-circle-bg {
+  stroke: none;
+  stroke-dasharray: 188;
+  stroke-dashoffset: 188;
+  stroke-width: 4;
+  stroke-miterlimit: 10;
+  stroke: #10b981;
+  fill: none;
+  stroke-linecap: round;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-path {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke-width: 6;
+  stroke-miterlimit: 10;
+  stroke: #10b981;
+  fill: none;
+  animation: stroke-check 0.5s 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.toast-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+  animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+.toast-subtitle {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.close-toast {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-toast:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Confetti effect */
+.confetti {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+}
+
+.confetti::before,
+.confetti::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  animation: confettiFall 3s linear infinite;
+}
+
+.confetti::after {
+  background: linear-gradient(45deg, #10b981, #059669);
+  animation-delay: -1s;
+  animation-duration: 2.5s;
+}
+
+/* Animations */
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes stroke-check {
+  100% {
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes titleGlow {
+  from { filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5)); }
+  to { filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.8)); }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .success-toast {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+}
