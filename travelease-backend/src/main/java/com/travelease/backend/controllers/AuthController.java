@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173") 
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -33,36 +33,53 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-        if (userService.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+        try {
+            if (userService.existsByEmail(request.getEmail())) {
+                return ResponseEntity.badRequest().body("Error: Email is already in use!");
+            }
+
+            // Create new user's account
+            User user = new User();
+            user.setFullname(request.getFullname());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            
+            // ✅ Ensure roles set is not null. 
+            // If your User model uses Set<String> roles, this works:
+            user.setRoles(new HashSet<>(Collections.singletonList("USER"))); 
+            
+            userService.save(user);
+
+            return ResponseEntity.ok("User registered successfully!");
+        } catch (Exception e) {
+            e.printStackTrace(); // Print error to backend console
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setFullname(request.getFullname());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(new HashSet<>(Collections.singletonList("USER"))); 
-        userService.save(user);
-        return ResponseEntity.ok("User registered successfully!");
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-        
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtService.generateToken(authentication);
-        
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();    
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+            
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtService.generateToken(authentication);
+            
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();    
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt, 
-                                                 userDetails.getId(), 
-                                                 userDetails.getUsername(), 
-                                                 userDetails.getUsername(), // or email
-                                                 roles));
+            return ResponseEntity.ok(new JwtResponse(
+                    jwt, 
+                    userDetails.getId(), 
+                    userDetails.getUsername(), 
+                    userDetails.getEmail(), // ✅ Ensure this getter exists in UserDetailsImpl
+                    roles));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid email or password");
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.travelease.backend.services;
 
 import com.travelease.backend.dto.BookingRequest;
+import com.travelease.backend.dto.BookingResponse;
 import com.travelease.backend.models.Booking;
 import com.travelease.backend.models.Bus;
 import com.travelease.backend.models.User;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -65,10 +67,8 @@ public class BookingService {
 
     @Transactional
     public Booking confirmBooking(String bookingId, String transactionId) {
-        // Find by PNR (bookingId)
-        Booking booking = bookingRepository.findByBookingId(bookingId)
-                .stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        // ✅ FIXED: Use helper method to get Entity
+        Booking booking = findBookingEntity(bookingId);
 
         if (!"PENDING".equals(booking.getStatus())) {
             return booking; 
@@ -97,7 +97,8 @@ public class BookingService {
 
     @Transactional
     public void cancelBooking(String bookingId) {
-        Booking booking = getBookingById(bookingId); // Use smart lookup
+        // ✅ FIXED: Now calls findBookingEntity() which returns the Booking object (not DTO)
+        Booking booking = findBookingEntity(bookingId); 
 
         if ("CONFIRMED".equals(booking.getStatus())) {
             Bus bus = busRepository.findById(booking.getBusId())
@@ -116,22 +117,60 @@ public class BookingService {
         bookingRepository.save(booking);
     }
 
-    public List<Booking> getUserBookings(String email) {
+    // --- READ OPERATIONS ---
+
+    public List<BookingResponse> getUserBookings(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return bookingRepository.findByUserId(user.getId());
+        
+        List<Booking> bookings = bookingRepository.findByUserId(user.getId());
+        
+        return bookings.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
-    
-    // ✅ FIXED: Support lookup by both MongoID and PNR (BookingID)
-    public Booking getBookingById(String id) {
-        // 1. Try finding by PNR (Booking ID) first
-        Booking byPnr = bookingRepository.findByBookingId(id).stream().findFirst().orElse(null);
-        if (byPnr != null) {
-            return byPnr;
-        }
 
-        // 2. Fallback to Database ID
-        return bookingRepository.findById(id)
+    // Public method for Controller (Returns DTO)
+    public BookingResponse getBookingById(String id) {
+        Booking booking = findBookingEntity(id);
+        return mapToResponse(booking);
+    }
+
+    // ✅ NEW HELPER METHOD: Returns the Booking Entity (for internal logic)
+    private Booking findBookingEntity(String id) {
+        // 1. Try finding by PNR first
+        Booking booking = bookingRepository.findByBookingId(id)
+                .stream().findFirst()
+                .orElse(null);
+
+        // 2. If not found, try by DB ID
+        if (booking == null) {
+            booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID/PNR: " + id));
+        }
+        return booking;
+    }
+
+    // Mapper Method
+    private BookingResponse mapToResponse(Booking booking) {
+        BookingResponse response = new BookingResponse();
+        
+        response.setId(booking.getId());
+        response.setBookingId(booking.getBookingId());
+        response.setBookingTime(booking.getBookingTime());
+        response.setSeatNumbers(booking.getSeatNumbers());
+        response.setTotalAmount(booking.getTotalAmount());
+        response.setStatus(booking.getStatus());
+
+        busRepository.findById(booking.getBusId()).ifPresent(bus -> {
+            response.setBusName(bus.getOperator());
+            response.setSource(bus.getFromCity());
+            response.setDestination(bus.getToCity());
+            response.setBusType(bus.getBusType());
+            response.setDepartureTime(bus.getDepartureTime());
+            response.setArrivalTime(bus.getArrivalTime());
+        });
+
+        return response;
     }
 }

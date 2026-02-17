@@ -3,6 +3,7 @@ package com.travelease.backend.controllers;
 import com.travelease.backend.dto.BookingRequest;
 import com.travelease.backend.models.Booking;
 import com.travelease.backend.services.BookingService;
+import com.travelease.backend.dto.BookingResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,14 +34,14 @@ public class BookingController {
     }
 
     @GetMapping("/my-bookings")
-    public ResponseEntity<List<Booking>> getUserBookings() {
+    public ResponseEntity<List<BookingResponse>> getUserBookings() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
         return ResponseEntity.ok(bookingService.getUserBookings(email));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Booking> getBookingById(@PathVariable String id) {
+    public ResponseEntity<BookingResponse> getBookingById(@PathVariable String id) {
         return ResponseEntity.ok(bookingService.getBookingById(id));
     }
 

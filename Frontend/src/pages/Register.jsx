@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../api/authApi";
-import FloatingInput from '../components/Floatinginput';
+import FloatingInput from '../components/FloatingInput'; // Fixed capitalization
 import SuccessToast from "../components/SuccessToast";
 import './Auth.css'; 
 
@@ -12,7 +12,6 @@ const Register = () => {
   const [showToast, setShowToast] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  // Real-time Strength Calculation
   useEffect(() => {
     let score = 0;
     if (form.password.length > 5) score += 40;
@@ -28,7 +27,15 @@ const Register = () => {
       await authApi.register(form);
       setShowToast(true);
     } catch (err) {
-      alert("Registration failed: " + (err.response?.data || "Unknown error"));
+      console.error("Registration Error:", err);
+      // ✅ FIX: Handle both String and Object error responses
+      let errorMessage = "Registration failed. Please try again.";
+      if (err.response && err.response.data) {
+          errorMessage = typeof err.response.data === 'string' 
+              ? err.response.data 
+              : (err.response.data.message || err.response.data.error || JSON.stringify(err.response.data));
+      }
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -38,7 +45,7 @@ const Register = () => {
     <div className="auth-page">
       <div className="auth-banner" style={{backgroundImage: "url('https://images.unsplash.com/photo-1626606011853-e153a992d966?w=1600')"}}>
         <div className="banner-content">
-          <h1>Join the Community 🌍</h1>
+          <h1>Join the Community 🚀</h1>
           <p>Get exclusive discounts on your first bus trip.</p>
         </div>
       </div>
@@ -63,7 +70,7 @@ const Register = () => {
               label="Email Address"
               name="email"
               type="email"
-              icon="✉️"
+              icon="📧"
               value={form.email}
               onChange={(e) => setForm({...form, email: e.target.value})}
             />
@@ -72,12 +79,11 @@ const Register = () => {
               label="Create Password"
               name="password"
               type="password"
-              icon="🔑"
+              icon="🔒"
               value={form.password}
               onChange={(e) => setForm({...form, password: e.target.value})}
             />
 
-            {/* Password Strength Bar */}
             {form.password && (
               <div className="strength-bar-container">
                 <div 
