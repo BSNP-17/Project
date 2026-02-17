@@ -1,0 +1,215 @@
+/* Payment.css */
+.payment-page-container {
+  background: #f4f4f4;
+  min-height: 80vh;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.payment-card-layout {
+  display: flex;
+  gap: 30px;
+  max-width: 1000px;
+  width: 100%;
+}
+
+/* Methods Section */
+.payment-methods {
+  flex: 1.5;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.payment-methods h2 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.method-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.method-item:hover {
+  background: #f9f9f9;
+}
+
+.method-item.active {
+  border-color: #ff6b35;
+  background: #fff5f0;
+}
+
+.method-item .icon {
+  font-size: 1.5rem;
+}
+
+.method-item h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.method-item p {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Summary Box */
+.payment-summary-box {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  height: fit-content;
+}
+
+.payment-summary-box h3 {
+  margin: 0 0 20px;
+  font-size: 1.1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.summary-row.green { color: #28a745; }
+
+.divider {
+  border-bottom: 1px dashed #ccc;
+  margin: 15px 0;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.payment-form {
+  margin-bottom: 20px;
+}
+
+.pay-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.pay-input:focus {
+  border-color: #ff6b35;
+}
+
+.pay-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.pay-now-btn {
+  width: 100%;
+  background: #ff6b35;
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pay-now-btn:hover:not(:disabled) {
+  background: #e55a2b;
+}
+
+.pay-now-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .payment-card-layout { flex-direction: column; }
+}
+/* Add to existing Payment.css */
+
+/* Bank Simulation Modal */
+.bank-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bank-modal {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bank-loader {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #ff6b35;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 1s linear infinite;
+}
+
+.bank-modal h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.bank-modal p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.secure-badge {
+  background: #f0fdf4;
+  color: #166534;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #bbf7d0;
+}
+
+@keyframes popUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}

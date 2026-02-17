@@ -1,0 +1,169 @@
+/* BusCard.css - RedBus Style */
+.bus-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px; /* Slightly sharp corners like RedBus */
+  margin-bottom: 20px;
+  transition: box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.bus-card:hover {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-main {
+  display: flex;
+  padding: 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* 1. Info Column */
+.bus-info-col {
+  flex: 1.5;
+}
+
+.operator-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3e3e52;
+  margin: 0 0 5px 0;
+}
+
+.bus-type {
+  font-size: 0.85rem;
+  color: #7e7e8c;
+  margin: 0 0 10px 0;
+}
+
+.rating-badge {
+  background: #38b87c;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.rating-count {
+  font-weight: 400;
+  color: rgba(255,255,255,0.8);
+  margin-left: 5px;
+}
+
+/* 2. Schedule Column */
+.schedule-col {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.time-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3e3e52;
+  display: block;
+}
+
+.city-text {
+  font-size: 0.85rem;
+  color: #7e7e8c;
+  display: block;
+}
+
+.duration-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+}
+
+.duration-text {
+  font-size: 0.8rem;
+  color: #7e7e8c;
+  margin-bottom: 2px;
+}
+
+.duration-line {
+  width: 100%;
+  height: 1px;
+  background: #c1c1c1;
+  position: relative;
+}
+
+.duration-line::after {
+  content: '>';
+  position: absolute;
+  right: -5px;
+  top: -7px;
+  color: #c1c1c1;
+}
+
+/* 3. Price Column */
+.price-col {
+  flex: 1;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price-tag {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #3e3e52;
+}
+
+.seats-left {
+  font-size: 0.8rem;
+  color: #7e7e8c;
+  margin: 5px 0 15px 0;
+}
+
+.view-seats-btn {
+  background: #d84e55;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.view-seats-btn:hover {
+  background: #bf3e45;
+}
+
+/* Amenities Strip */
+.amenities-strip {
+  background: #f8f9fa;
+  padding: 8px 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 20px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .card-main {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .schedule-col {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .price-col {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

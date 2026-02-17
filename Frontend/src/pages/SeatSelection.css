@@ -1,0 +1,206 @@
+/* SeatSelection.css */
+.seat-selection-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  display: flex;
+  gap: 30px;
+  padding: 0 20px;
+}
+
+.layout-section {
+  flex: 2;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.summary-section {
+  flex: 1;
+}
+
+.summary-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 100px;
+}
+
+/* Decks */
+.decks-container {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.deck {
+  border: 2px solid #e0e0e0;
+  padding: 15px;
+  border-radius: 8px;
+  background: #fdfdfd;
+}
+
+.deck h3 {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 15px;
+}
+
+.steering-wheel {
+  text-align: right;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+  color: #ccc;
+  border-bottom: 1px dashed #ccc;
+  padding-bottom: 5px;
+}
+
+/* Seats Grid */
+.seat-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.aisle {
+  width: 20px;
+}
+
+/* Individual Seat Styling */
+.seat-item {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: white;
+}
+
+.seat-item:hover {
+  border-color: #ff6b35;
+  transform: scale(1.05);
+}
+
+/* SEATER STYLE */
+.seat-item.seater {
+  width: 40px;
+  height: 40px;
+}
+.seat-item.seater .seat-headrest {
+  position: absolute;
+  top: -5px;
+  width: 80%;
+  height: 5px;
+  background: #ccc;
+  border-radius: 4px;
+}
+
+/* SLEEPER STYLE */
+.seat-item.sleeper {
+  width: 40px;
+  height: 80px; /* Taller */
+}
+
+/* States */
+.seat-item.selected {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  color: white;
+}
+.seat-item.selected .seat-headrest { background: #d84e55; }
+
+.seat-item.booked {
+  background: #e0e0e0;
+  border-color: #ccc;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.seat-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Summary Box Styling */
+.trip-route {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.price-breakdown {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.total-pay {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ff6b35;
+}
+
+.proceed-btn {
+  width: 100%;
+  background: #ff6b35;
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.proceed-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.proceed-btn:hover:not(:disabled) {
+  background: #e55a2b;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 15px;
+}
+.badge {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.badge::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 2px;
+}
+.badge.available::before { border: 1px solid #ccc; background: white; }
+.badge.selected::before { background: #ff6b35; }
+.badge.booked::before { background: #e0e0e0; }
+
+@media (max-width: 900px) {
+  .seat-selection-container { flex-direction: column; }
+  .decks-container { flex-direction: column; }
+  .summary-card { position: static; }
+}

@@ -1,0 +1,99 @@
+/* Floating Input UX Styles */
+.floating-input-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.input-wrapper {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+  height: 56px; /* Fixed height for consistency */
+}
+
+.input-wrapper:focus-within {
+  border-color: #ff6b35;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.input-wrapper.has-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+/* The Input Field */
+.form-control {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 20px 16px 6px 45px; /* Bottom padding for text, Top for label space */
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1e293b;
+  outline: none;
+  border-radius: 12px;
+}
+
+/* The Label Animation */
+.floating-label {
+  position: absolute;
+  left: 45px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Active State (When typing) */
+.input-wrapper.active .floating-label {
+  top: 12px;
+  font-size: 0.75rem;
+  color: #ff6b35;
+  font-weight: 600;
+}
+
+/* Icons */
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: #ff6b35;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #94a3b8;
+  padding: 5px;
+}
+
+.password-toggle:hover {
+  color: #1e293b;
+}
+
+.error-text {
+  font-size: 0.85rem;
+  color: #ef4444;
+  margin-top: 4px;
+  display: block;
+  margin-left: 4px;
+}

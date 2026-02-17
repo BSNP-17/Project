@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* --- Theme Variables extracted from your Gradient --- */
+  --primary-color: #8e44ad;       /* Deep Purple (for text/icons) */
+  --primary-dark: #2c3e50;        /* Dark Slate */
+  --secondary-color: #ff6b6b;     /* Vibrant Coral (for buttons) */
+  --secondary-hover: #ee5253;     /* Darker Coral */
+  
+  /* --- UI Colors --- */
+  --bg-glass: rgba(255, 255, 255, 0.25); /* Glassmorphism effect */
+  --bg-card: rgba(255, 255, 255, 0.9);   /* Readable card background */
+  
+  /* --- Text --- */
+  --text-main: #2c3e50;
+  --text-muted: #636e72;
+  
+  /* --- Borders & Shadows --- */
+  --border-color: rgba(255, 255, 255, 0.4);
+  --shadow-sm: 0 8px 32px 0 rgba(31, 38, 135, 0.15); /* Glass shadow */
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Moving Gradient Background (Your Code) */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #a18cd1);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  min-height: 100vh;
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- Global Glassmorphism Classes --- */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}

@@ -1,0 +1,320 @@
+/* src/pages/Home.css */
+
+/* --- 1. HERO SECTION --- */
+.hero-modern {
+  height: 550px;
+  /* IMPORTANT: Set to transparent so the body's animated gradient shows! */
+  background: transparent; 
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* No overflow:hidden so the search bar shadow can breathe */
+}
+
+/* Remove the old pattern overlay since we have a gradient */
+.hero-overlay { display: none; }
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 20px;
+  animation: fadeIn 1s ease-out;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  /* Dark text provides better contrast on pastel backgrounds */
+  color: #2d3436; 
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+}
+
+.highlight {
+  /* Gradient Text Effect */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+  /* Compatibility: Define standard property alongside vendor prefix */
+  -webkit-background-clip: text; /* Safari/Chrome */
+  background-clip: text;         /* Standard */
+  
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+.hero-subtitle {
+  color: #2d3436;
+  opacity: 0.8;
+  font-size: 1.3rem;
+  margin-bottom: 60px;
+  font-weight: 500;
+}
+
+/* --- 2. GLASS SEARCH BAR (The Pill) --- */
+.search-bar-pro {
+  /* GLASSMORPHISM EFFECT */
+  background: rgba(255, 255, 255, 0.25); /* Semi-transparent */
+  backdrop-filter: blur(16px);            /* The "Frosted" Blur */
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6); /* Subtle white border */
+  
+  border-radius: 50px; /* Pill Shape */
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); /* Soft Shadow */
+  height: 90px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Input Fields inside the Glass Bar */
+.search-bar-pro input {
+  background: transparent !important;
+}
+
+/* The Swap Icon */
+.switcher {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Glassy Button */
+  background: rgba(255, 255, 255, 0.8);
+  color: #764ba2; /* Purple Icon */
+  border: 1px solid white;
+  
+  font-weight: bold;
+  font-size: 1.4rem;
+  margin: 0 -22px; /* Pull it between inputs */
+  z-index: 10;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.switcher:hover {
+  transform: rotate(180deg) scale(1.1);
+  background: white;
+  color: #8e44ad;
+}
+
+/* --- ENHANCED DATE BOX --- */
+.date-box {
+  flex: 0.8;
+  padding: 10px 25px;
+  border-left: 1px solid rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  transition: background 0.3s;
+  border-radius: 20px; /* rounded hover effect */
+}
+
+.date-box:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.date-box label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #764ba2; /* Purple Label */
+  opacity: 0.9;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.date-box input[type="date"] {
+  width: 100%;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3436;
+  outline: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* --- CUSTOM CALENDAR ICON STYLING --- */
+.date-box input[type="date"]::-webkit-calendar-picker-indicator {
+  /* This filter turns the black default icon into your Theme Purple (#764ba2) */
+  filter: invert(31%) sepia(30%) saturate(2252%) hue-rotate(234deg) brightness(87%) contrast(96%);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+  opacity: 0.8;
+}
+
+.date-box input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Search Button - Gradient */
+.search-btn-pro {
+  /* Purple/Pink Gradient to match theme */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  height: 100%;
+  padding: 0 50px;
+  border-top-right-radius: 50px; /* Matches container */
+  border-bottom-right-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+}
+
+.search-btn-pro:hover {
+  opacity: 0.9;
+  transform: translateX(2px);
+}
+
+/* --- 3. GLASS CARDS --- */
+.section-container {
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 0 24px;
+}
+
+.section-title {
+  font-size: 2rem;
+  color: #2d3436;
+  margin-bottom: 2rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.destination-card {
+  /* Glass Card Style */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.destination-card:hover {
+  transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.destination-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  /* Blend mode helps images sit better on pastel backgrounds */
+  mix-blend-mode: multiply; 
+  opacity: 0.9;
+}
+
+.card-info {
+  padding: 24px;
+}
+
+.card-info h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #2d3436;
+  font-weight: 800;
+}
+
+.price {
+  color: #764ba2; /* Purple Price */
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+/* --- 4. FEATURES SECTION --- */
+.features-section {
+  /* Glass Strip */
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  margin-top: 4rem;
+  padding: 5rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 6rem;
+  text-align: center;
+}
+
+.feature .icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.feature h3 {
+  color: #2d3436;
+  font-weight: 800;
+}
+
+.feature p {
+  color: #2d3436;
+  opacity: 0.8;
+}
+
+/* --- Animation --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .hero-modern { height: auto; padding: 100px 0 60px; }
+  
+  .search-bar-pro {
+    flex-direction: column;
+    height: auto;
+    border-radius: 24px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.6); /* More opaque on mobile */
+  }
+
+  .switcher {
+    transform: rotate(90deg);
+    margin: 10px auto;
+  }
+  
+  .search-btn-pro {
+    width: 100%;
+    padding: 15px;
+    border-radius: 16px;
+    margin-top: 15px;
+  }
+  
+  .date-box {
+    border-left: none;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 15px 0;
+    margin: 5px 0;
+  }
+}

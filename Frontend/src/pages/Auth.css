@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* --- 1. MAIN LAYOUT (Split Screen) --- */
+.auth-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #fff;
+  overflow: hidden; /* Prevents scrollbars on the main page */
+}
+
+/* LEFT SIDE - IMAGE */
+.auth-banner {
+  flex: 1.2; /* Takes up 55% of the width */
+  
+  /* 1. Fallback Gradient (Visible if image fails/loads slow) */
+  background: linear-gradient(135deg, #ff6b35, #d94e1f); 
+  
+  /* 2. The Image (High Quality & Optimized) */
+  background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') !important;
+  
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 4rem;
+  color: white;
+  min-height: 100vh;
+}
+
+/* Dark Overlay (Keeps text readable) */
+.auth-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Slightly darker gradient for better text contrast */
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.8));
+  z-index: 1;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+  animation: fadeUp 0.8s ease-out;
+}
+
+.banner-content h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.banner-content p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* RIGHT SIDE - FORM */
+.auth-form-container {
+  flex: 0.8; /* Takes up 45% of the width */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Center the card horizontally */
+  padding: 2rem;
+  background: #fff;
+  overflow-y: auto; /* Allow scrolling if form is tall */
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px; /* Limits width on big screens */
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* --- 2. TYPOGRAPHY & HEADER --- */
+.auth-header {
+  margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+  font-size: 2rem;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+  color: #64748b;
+  font-size: 1rem;
+}
+
+/* --- 3. FORM ELEMENTS --- */
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 107, 53, 0.25);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+/* --- 4. EXTRAS (Social, Divider, Footer) --- */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.divider span {
+  padding: 0 1rem;
+}
+
+.social-login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.social-btn {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  /* Flexbox for centering Icon + Text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; 
+  font-size: 0.95rem;
+}
+
+.social-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  color: #64748b;
+}
+
+.auth-footer a {
+  color: #ff6b35;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Alert Box */
+.alert-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #fecaca;
+}
+
+/* Strength Meter */
+.strength-bar-container {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.strength-text {
+  position: absolute;
+  right: 0;
+  top: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* --- 5. ANIMATIONS --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 6. MOBILE RESPONSIVE --- */
+@media (max-width: 900px) {
+  .auth-banner {
+    display: none; /* Hide image on small screens/mobiles */
+  }
+  .auth-form-container {
+    flex: 1;
+    padding: 1.5rem;
+  }
+}
