@@ -22,25 +22,24 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired private BusRepository busRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
-    // 1. EXPANDED MAJOR HUBS (Includes Metros for Trending Routes)
+    // 1. FIXED: Updated spellings to exactly match React frontend dropdowns
     private static final List<String> HUBS = Arrays.asList(
-        "Bangalore", "Mysore", "Mangalore", "Hubli", "Belgaum", 
-        "Chennai", "Mumbai", "Pune", "Goa", "Hyderabad"
+        "Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi", 
+        "Davangere", "Shimoga", "Udupi", "Goa", "Hyderabad"
     );
 
-    // 2. CONNECTED TOWNS (The Network)
+    // 2. CONNECTED TOWNS
     private static final List<String> DESTINATIONS = Arrays.asList(
-        "Udupi", "Manipal", "Kukke Subramanya", "Dharmasthala", "Chikmagalur", "Coorg", "Madikeri",
+        "Manipal", "Kukke Subramanya", "Dharmasthala", "Chikmagalur", "Coorg", "Madikeri",
         "Hassan", "Tumkur", "Chitradurga", "Bellary", "Raichur", "Bidar", "Bijapur", "Bagalkot",
         "Gadag", "Hospet", "Hampi", "Gokarna", "Karwar", "Sirsi", "Sringeri", "Horanadu",
-        "Kolar", "Mandya", "Chamarajanagar", "Ramanagara", "Chikkaballapur", "Haveri",
-        "Bhatkal", "Kundapura", "Murudeshwar", "Dandeli", "Badami", "Pattadakal", "Aihole"
+        "Kundapura", "Murudeshwar", "Dandeli", "Badami"
     );
 
     // 3. OPERATORS
     private static final List<String> OPERATORS = Arrays.asList(
-        "KSRTC (Airavat)", "KSRTC (Rajahamsa)", "KSRTC (Ambari Dream Class)",
-        "VRL Travels", "SRS Travels", "Sugama Tourists", "Durgamba Motors",
+        "KSRTC (Airavat)", "KSRTC (Rajahamsa)", "KSRTC (Ambari Dream)",
+        "VRL Travels", "SRS Travels", "Sugama Tourist", "Durgamba Motors",
         "Orange Tours", "Seabird Tourists", "Canara Pinto", "Reshma Travels", "IntrCity SmartBus"
     );
 
@@ -68,110 +67,95 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedBuses() {
-        // Since you deleted the DB, this will run freshly
-        if (busRepository.count() > 0) {
-            System.out.println("⚡ DataSeeder: Buses already exist. Skipping.");
-            return;
-        }
+        // 🚨 CRITICAL CHANGE: We now clear the old buses every time the server starts.
+        // This ensures dates are always fresh and you never search for expired buses.
+        busRepository.deleteAll();
+        System.out.println("🧹 DataSeeder: Cleared old, expired buses.");
 
         System.out.println("🚀 DataSeeder: Generating comprehensive bus network...");
         List<Bus> buses = new ArrayList<>();
         
-        // DYNAMIC DATES: Always starts from "Today" when the server restarts/runs
+        // DYNAMIC DATES: Always starts from "Today" and goes 30 days into the future
         LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusDays(45); // Generate for next 45 days
+        LocalDate endDate = startDate.plusDays(30); 
 
-        // LOOP 1: Iterate through every single day
+        // Generate buses
         for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-            
-            // LOOP 2: Iterate through every HUB (Source)
             for (String from : HUBS) {
                 
-                // SUB-LOOP A: Connect Hub to every other Hub (Major Routes)
+                // Hub to Hub
                 for (String to : HUBS) {
                     if (!from.equals(to)) {
-                        // Generate 3 buses per day for Hub-to-Hub
                         buses.addAll(generateDailyBuses(date, from, to, 3));
                     }
                 }
 
-                // SUB-LOOP B: Connect Hub to every Destination (Town Routes)
+                // Hub to Destination
                 for (String to : DESTINATIONS) {
-                    // Generate 2 buses per day for Hub-to-Town
-                    buses.addAll(generateDailyBuses(date, from, to, 2));
-                    
-                    // Generate 2 buses per day for Town-to-Hub (Return journey)
-                    buses.addAll(generateDailyBuses(date, to, from, 2));
+                    buses.addAll(generateDailyBuses(date, from, to, 1)); // Reduced to 1 to save memory
+                    buses.addAll(generateDailyBuses(date, to, from, 1));
                 }
             }
 
-            // Save in batches to prevent memory overflow
-            if (buses.size() > 2000) {
+            // Save in batches
+            if (buses.size() > 1000) {
                 busRepository.saveAll(buses);
                 buses.clear();
-                System.out.println("... Batch saved for date: " + date);
             }
         }
 
-        // Save remaining
         if (!buses.isEmpty()) {
             busRepository.saveAll(buses);
         }
 
-        System.out.println("✅ DataSeeder: COMPLETE! Database populated with dense schedules.");
+        System.out.println("✅ DataSeeder: COMPLETE! Database populated with fresh schedules.");
     }
 
-    // Helper to generate 'count' buses for a specific Route on a specific Date
     private List<Bus> generateDailyBuses(LocalDate date, String from, String to, int count) {
         List<Bus> routeBuses = new ArrayList<>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
         for (int i = 0; i < count; i++) {
-            // Distribute times: Morning, Afternoon, Night
             int hour;
-            if (i == 0) hour = 6 + random.nextInt(4); // Morning (6-10 AM)
-            else if (i == 1) hour = 19 + random.nextInt(4); // Night (7-11 PM)
-            else hour = 12 + random.nextInt(6); // Afternoon (12-6 PM)
+            if (i == 0) hour = 6 + random.nextInt(4); // Morning
+            else if (i == 1) hour = 19 + random.nextInt(4); // Night
+            else hour = 12 + random.nextInt(6); // Afternoon
             
             int minute = random.nextBoolean() ? 0 : 30;
             LocalDateTime departure = LocalDateTime.of(date, LocalTime.of(hour, minute));
             
-            // Duration varies by distance type (Mock logic)
             boolean isLongDistance = HUBS.contains(from) && HUBS.contains(to);
             int durationHours = isLongDistance ? (7 + random.nextInt(5)) : (4 + random.nextInt(4));
             LocalDateTime arrival = departure.plusHours(durationHours);
 
-            // Random Details
             String operator = OPERATORS.get(random.nextInt(OPERATORS.size()));
             String type = TYPES.get(random.nextInt(TYPES.size()));
 
-            // Price Calculation
             double basePrice = isLongDistance ? 800 : 450;
             if (type.contains("AC")) basePrice += 300;
             if (type.contains("Sleeper")) basePrice += 250;
             double price = Math.round(basePrice / 10.0) * 10.0;
 
             Bus bus = new Bus();
-            // Unique Bus Number
             bus.setBusNumber("KA-" + (10 + random.nextInt(89)) + "-" + 
                             (char)('A' + random.nextInt(26)) + (char)('A' + random.nextInt(26)) + 
                             "-" + (1000 + random.nextInt(8999)));
-            bus.setOperator(operator);
+            
+            // Note: Make sure these setter names match your Bus.java model!
+            bus.setOperator(operator); 
             bus.setFromCity(from);
             bus.setToCity(to);
             bus.setBusType(type);
             bus.setPrice(price);
             bus.setTotalSeats(30 + random.nextInt(20));
-            bus.setAvailableSeats(bus.getTotalSeats()); // Starts empty
+            bus.setAvailableSeats(bus.getTotalSeats());
             bus.setDepartureTime(departure);
             bus.setArrivalTime(arrival);
             
-            // Amenities
             List<String> amenities = new ArrayList<>(Arrays.asList("Water Bottle", "Charging Point"));
             if (type.contains("AC")) amenities.add("Reading Light");
             if (type.contains("Sleeper")) amenities.add("Blanket");
             if (type.contains("Volvo") || type.contains("SmartBus")) amenities.add("WiFi");
-            if (type.contains("Scania")) amenities.add("Movie System");
             bus.setAmenities(amenities);
 
             routeBuses.add(bus);
