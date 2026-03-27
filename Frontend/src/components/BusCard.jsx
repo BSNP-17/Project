@@ -62,7 +62,7 @@ const BusCard = ({ bus }) => {
           <p className="seats-left">{bus.availableSeats} Seats available</p>
           <button 
             className="view-seats-btn"
-            onClick={() => navigate(`/book/${bus.id}`)}
+            onClick={() => navigate(`/seat/${bus.id}`)} /* ✅ FIXED ROUTE HERE */
           >
             VIEW SEATS
           </button>

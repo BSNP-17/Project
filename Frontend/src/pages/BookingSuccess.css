@@ -1,141 +1,141 @@
-/* BookingSuccess.css */
-.success-page-container {
-  min-height: 80vh;
-  background: #f3f4f6;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.success-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  min-height: 70vh;
 }
 
-/* Header */
 .success-header {
   text-align: center;
-  margin-bottom: 40px;
-  animation: fadeInDown 0.6s ease;
+  margin-bottom: 30px;
 }
 
-.success-icon {
-  width: 80px;
-  height: 80px;
+.check-icon {
+  width: 60px;
+  height: 60px;
   background: #10b981;
   color: white;
   border-radius: 50%;
+  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 15px;
   box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
 }
 
-.success-icon svg { width: 40px; height: 40px; }
+.success-header h2 {
+  color: #1e293b;
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+}
 
-.success-header h1 { color: #1f2937; margin-bottom: 10px; }
-.success-header p { color: #6b7280; font-size: 1.1rem; }
+.success-header p { color: #64748b; }
 
-/* Ticket Card - The Realistic Part */
+/* TICKET STYLING */
 .ticket-card {
   background: white;
-  width: 100%;
-  max-width: 600px;
   border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   overflow: hidden;
   position: relative;
   margin-bottom: 30px;
-  border: 1px solid #e5e7eb;
 }
 
-/* Cutout effect circles */
-.ticket-card::before, .ticket-card::after {
-  content: '';
-  position: absolute;
-  top: 65%;
-  width: 20px;
-  height: 20px;
-  background: #f3f4f6;
-  border-radius: 50%;
-}
-.ticket-card::before { left: -10px; }
-.ticket-card::after { right: -10px; }
-
-.ticket-header {
-  background: #ff6b35;
-  padding: 20px 30px;
+.ticket-top {
+  background: #1e293b;
   color: white;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operator-logo {
+  width: 50px;
+  height: 50px;
+  background: #ff6b35;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.operator-details { flex: 1; margin-left: 15px; }
+.operator-details h3 { margin: 0; font-size: 1.2rem; }
+.operator-details p { margin: 5px 0 0; font-size: 0.85rem; opacity: 0.8; }
+
+.pnr-badge {
+  background: rgba(255,255,255,0.1);
+  padding: 8px 15px;
+  border-radius: 8px;
+  text-align: right;
+}
+
+.pnr-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+.pnr-value { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; }
+
+.ticket-middle { padding: 30px 20px; border-bottom: 2px dashed #e2e8f0; }
+
+.route-grid {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.ticket-header .brand { font-weight: 800; font-size: 1.2rem; }
-.ticket-header .pnr { font-family: monospace; font-size: 1rem; opacity: 0.9; }
 
-.ticket-body { padding: 30px; }
+.route-point { display: flex; flex-direction: column; }
+.route-point.right { text-align: right; }
+.route-point .time { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
+.route-point .city { font-size: 1.1rem; font-weight: 600; color: #475569; margin: 5px 0; }
+.route-point .date { font-size: 0.85rem; color: #94a3b8; }
 
-.ticket-route-row {
+.route-divider { flex: 1; display: flex; align-items: center; margin: 0 20px; position: relative; }
+.dash-line { flex: 1; height: 2px; border-top: 2px dashed #cbd5e1; }
+.bus-icon { position: absolute; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; font-size: 1.5rem; }
+
+.ticket-bottom {
+  padding: 20px;
+  background: #f8fafc;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px dashed #e5e7eb;
 }
 
-.city-info { display: flex; flex-direction: column; }
-.city-info.right { align-items: flex-end; text-align: right; }
-.city-info .label { font-size: 0.75rem; color: #9ca3af; font-weight: 700; letter-spacing: 1px; }
-.city-info .city { font-size: 1.5rem; font-weight: 800; color: #374151; margin: 4px 0; }
-.city-info .time { font-size: 1rem; color: #ff6b35; font-weight: 600; }
-.route-arrow { color: #d1d5db; font-size: 0.8rem; letter-spacing: 2px; }
+.passenger-info { display: flex; gap: 30px; flex-wrap: wrap; }
+.info-block label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+.info-block strong { font-size: 1rem; color: #1e293b; }
+.seat-highlight { color: #d84e55 !important; font-size: 1.2rem !important; }
 
-.ticket-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.detail-item { display: flex; flex-direction: column; }
-.detail-item .label { font-size: 0.85rem; color: #6b7280; margin-bottom: 4px; }
-.detail-item .value { font-size: 1rem; font-weight: 600; color: #1f2937; }
-.detail-item .value.highlight { color: #ff6b35; }
-.detail-item .value.price { font-size: 1.2rem; color: #10b981; }
-
-.ticket-footer {
-  background: #f9fafb;
-  padding: 15px;
-  text-align: center;
-  border-top: 1px solid #e5e7eb;
-}
-.barcode { font-family: 'Libre Barcode 39', cursive; font-size: 1.5rem; color: #374151; opacity: 0.5; margin-bottom: 5px; letter-spacing: 4px; }
-.powered-by { font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; }
+.qr-code-mock img { width: 80px; height: 80px; border-radius: 8px; }
 
 /* Buttons */
-.action-buttons {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
+.action-buttons { display: flex; gap: 15px; justify-content: center; }
+.action-buttons button { padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 1rem; transition: all 0.2s; }
+.btn-download { background: #d84e55; color: white; box-shadow: 0 4px 15px rgba(216, 78, 85, 0.3); }
+.btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216, 78, 85, 0.4); }
+.btn-home { background: white; color: #475569; border: 1px solid #cbd5e1 !important; }
+.btn-home:hover { background: #f1f5f9; }
+
+@media print {
+  body * { visibility: hidden; }
+  .ticket-card, .ticket-card * { visibility: visible; }
+  .ticket-card { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
 }
+/* Add this anywhere inside BookingSuccess.css */
 
-.btn-primary, .btn-secondary, .btn-text {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-primary { background: #ff6b35; color: white; box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3); }
-.btn-primary:hover { transform: translateY(-2px); }
-
-.btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
-.btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; }
-
-.btn-text { background: transparent; color: #6b7280; }
-.btn-text:hover { color: #1f2937; text-decoration: underline; }
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+.duration-badge {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
 }

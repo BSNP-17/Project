@@ -16,100 +16,106 @@ const SeatSelection = () => {
   const [bus, setBus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const fetchBusDetails = async () => {
       try {
         setLoading(true);
+        
+        // 🚀 BYPASS: If it's a mock bus from our fallback data
+        if (busId.startsWith('mock-')) {
+          setBus({
+            id: busId, operator: "TravelEase Premium Express", busType: "A/C Sleeper (2+1)",
+            fromCity: "Source", toCity: "Destination", price: 850,
+            bookedSeats: ["L1A", "U2B", "L4C"], 
+            departureTime: new Date().toISOString()
+          });
+          return;
+        }
+
+        // 🚀 REAL DATA: Fetch from Spring Boot
         const response = await busApi.getBusById(busId);
         setBus(response.data);
       } catch (err) {
-        console.error("Failed to load bus", err);
+        alert("Error fetching bus details from backend!");
+        navigate('/home');
       } finally {
         setLoading(false);
       }
     };
     fetchBusDetails();
-  }, [busId]);
+  }, [busId, navigate]);
 
-  // Toggle Seat Selection
-  const toggleSeat = (seatId, price) => {
-    // If booked, do nothing
+  const toggleSeat = (seatId) => {
     if (bus?.bookedSeats?.includes(seatId)) return;
-
     if (selectedSeats.includes(seatId)) {
-      // Unselect
       setSelectedSeats(prev => prev.filter(s => s !== seatId));
-      setTotalPrice(prev => prev - price);
     } else {
-      // Select (Max 6)
-      if (selectedSeats.length >= 6) return alert("You can only book 6 seats max.");
+      if (selectedSeats.length >= 6) return alert("You can book a maximum of 6 seats.");
       setSelectedSeats(prev => [...prev, seatId]);
-      setTotalPrice(prev => prev + price);
     }
   };
 
   const handleProceed = async () => {
     if (selectedSeats.length === 0) return alert('Select at least 1 seat');
     
-    // Mock user check (replace with real auth check if needed)
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!userData) {
-      alert("Please login first");
+      alert("Please login first to book seats!");
       navigate('/login');
       return;
     }
 
+    setLoading(true);
     try {
-      // Call Backend to hold seats
-      const bookingRequest = {
-        busId: busId,
-        passengerDetails: selectedSeats.map(() => userData.fullname || "Passenger"),
-        seatNumbers: selectedSeats
-      };
+      let finalBookingId = "";
+      let finalTotalAmount = selectedSeats.length * (bus?.price || 850);
+
+      // 🚀 BYPASS: Mock Booking creation for Mock Buses
+      if (busId.startsWith('mock-')) {
+        finalBookingId = "PNR" + Math.floor(Math.random() * 900000 + 100000); // Fake PNR
+        await new Promise(r => setTimeout(r, 1000)); // Simulate delay
+      } else {
+        // 🚀 REAL DATA: Create a PENDING booking in Spring Boot
+        const bookingRequest = {
+          busId: busId,
+          passengerDetails: selectedSeats.map(() => userData.fullname),
+          seatNumbers: selectedSeats
+        };
+        const response = await bookingApi.createBooking(bookingRequest);
+        finalBookingId = response.data.bookingId;
+        finalTotalAmount = response.data.totalAmount;
+      }
       
-      const response = await bookingApi.createBooking(bookingRequest);
-      
-      // Update Context
+      // Save data for the Payment Page
       updateBooking({
-        busId: busId,
-        busDetails: { 
-          name: bus.operator, 
-          type: bus.busType, 
-          departure: bus.departureTime 
-        },
-        selectedSeats: selectedSeats,
-        totalAmount: response.data.totalAmount, 
-        bookingId: response.data.bookingId
+        busId,
+        busDetails: { name: bus.operator, type: bus.busType, departure: bus.departureTime },
+        selectedSeats,
+        totalAmount: finalTotalAmount,
+        from: bus.fromCity, 
+        to: bus.toCity
       });
 
-      navigate(`/payment/${response.data.bookingId}`);
-
+      // Redirect to Payment
+      navigate(`/payment/${finalBookingId}`);
     } catch (err) {
       alert("Booking Failed: " + (err.response?.data || "Network Error"));
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Helper to render a single seat
-  const renderSeat = (seatNum, type = "seater", price) => {
-    const isBooked = bus?.bookedSeats?.includes(seatNum);
-    const isSelected = selectedSeats.includes(seatNum);
-    
-    return (
-      <div 
-        key={seatNum}
-        className={`seat-item ${type} ${isBooked ? 'booked' : ''} ${isSelected ? 'selected' : ''}`}
-        onClick={() => toggleSeat(seatNum, price)}
-        title={`Seat ${seatNum} | ₹${price}`}
-      >
-        <div className="seat-headrest"></div>
-        <div className="seat-body">
-          <span className="seat-num">{seatNum}</span>
-        </div>
-      </div>
-    );
-  };
+  const renderSeat = (seatNum, type) => (
+    <div 
+      key={seatNum}
+      className={`seat-item ${type} ${bus?.bookedSeats?.includes(seatNum) ? 'booked' : ''} ${selectedSeats.includes(seatNum) ? 'selected' : ''}`}
+      onClick={() => toggleSeat(seatNum)}
+    >
+      <div className="seat-headrest"></div>
+      <div className="seat-body"><span className="seat-num">{seatNum}</span></div>
+    </div>
+  );
 
   if (loading) return <Spinner />;
 
@@ -117,8 +123,6 @@ const SeatSelection = () => {
     <div className="page-wrapper">
       <Navbar />
       <div className="seat-selection-container">
-        
-        {/* Left Side: Layout */}
         <div className="layout-section">
           <div className="bus-layout-header">
             <h2>Select Seats</h2>
@@ -128,36 +132,31 @@ const SeatSelection = () => {
               <span className="badge booked">Booked</span>
             </div>
           </div>
-
           <div className="decks-container">
-            {/* LOWER DECK */}
             <div className="deck">
-              <h3>Lower Deck (Seater)</h3>
-              <div className="steering-wheel">Let's Go ➔</div>
+              <h3>Lower Deck</h3>
+              <div className="steering-wheel">Driver</div>
               <div className="seats-grid-2x2">
-                 {/* Mocking Rows */}
                  {[1,2,3,4,5].map(row => (
                    <div key={row} className="seat-row">
-                      {renderSeat(`L${row}A`, 'seater', bus.price)}
-                      {renderSeat(`L${row}B`, 'seater', bus.price)}
+                      {renderSeat(`L${row}A`, 'seater')}
+                      {renderSeat(`L${row}B`, 'seater')}
                       <div className="aisle"></div>
-                      {renderSeat(`L${row}C`, 'seater', bus.price)}
-                      {renderSeat(`L${row}D`, 'seater', bus.price)}
+                      {renderSeat(`L${row}C`, 'seater')}
+                      {renderSeat(`L${row}D`, 'seater')}
                    </div>
                  ))}
               </div>
             </div>
-
-            {/* UPPER DECK */}
             <div className="deck">
               <h3>Upper Deck (Sleeper)</h3>
-              <div className="steering-wheel-placeholder"></div>
+              <div className="steering-wheel-placeholder" style={{marginBottom:'20px'}}></div>
               <div className="seats-grid-sleeper">
                  {[1,2,3,4,5].map(row => (
                    <div key={row} className="seat-row">
-                      {renderSeat(`U${row}A`, 'sleeper', bus.price + 200)}
+                      {renderSeat(`U${row}A`, 'sleeper')}
                       <div className="aisle"></div>
-                      {renderSeat(`U${row}B`, 'sleeper', bus.price + 200)}
+                      {renderSeat(`U${row}B`, 'sleeper')}
                    </div>
                  ))}
               </div>
@@ -165,38 +164,21 @@ const SeatSelection = () => {
           </div>
         </div>
 
-        {/* Right Side: Price Summary */}
         <div className="summary-section">
           <div className="summary-card">
             <h3>Booking Summary</h3>
-            <div className="trip-route">
-              <strong>{bus.fromCity}</strong> ➔ <strong>{bus.toCity}</strong>
-            </div>
             <div className="selected-seats-list">
               <p>Seats: {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None'}</p>
             </div>
-            <div className="price-breakdown">
-              <span>Base Fare</span>
-              <span>₹{totalPrice}</span>
-            </div>
-            <div className="price-breakdown tax">
-              <span>Tax (5%)</span>
-              <span>₹{Math.round(totalPrice * 0.05)}</span>
-            </div>
             <div className="total-pay">
               <span>Total Amount</span>
-              <span>₹{Math.round(totalPrice * 1.05)}</span>
+              <span>₹{selectedSeats.length * (bus?.price || 0)}</span>
             </div>
-            <button 
-              className="proceed-btn" 
-              onClick={handleProceed}
-              disabled={selectedSeats.length === 0}
-            >
+            <button className="proceed-btn" onClick={handleProceed} disabled={selectedSeats.length === 0}>
               PROCEED TO PAY
             </button>
           </div>
         </div>
-
       </div>
       <Footer />
     </div>

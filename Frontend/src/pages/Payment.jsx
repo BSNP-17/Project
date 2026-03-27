@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import bookingApi from '../api/bookingApi'; 
-import paymentApi from '../api/paymentApi'; // ✅ Import Payment API
+import paymentApi from '../api/paymentApi'; 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
@@ -14,26 +14,25 @@ const Payment = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('upi');
+  
   const [processing, setProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Form States
   const [upiId, setUpiId] = useState('');
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvv: '' });
 
   useEffect(() => {
-    const fetchBooking = async () => {
-      try {
-        const response = await bookingApi.getBookingById(bookingId);
-        setBooking(response.data);
-      } catch (error) {
-        console.error("Fetch Error", error);
-        alert("Could not fetch booking details. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBooking();
-  }, [bookingId]);
+    // Pull booking details (like amount and bus ID) from local storage
+    const storedData = JSON.parse(localStorage.getItem('currentBooking'));
+    if (!storedData) {
+      alert("Booking session expired!");
+      navigate('/home');
+    } else {
+      setBooking(storedData);
+      setLoading(false);
+    }
+  }, [bookingId, navigate]);
 
   const handlePayment = async () => {
     // 1. Basic Validation
@@ -49,20 +48,36 @@ const Payment = () => {
     setProcessing(true);
 
     try {
-      // 2. ✅ Call the Real Backend API
+      // 🚀 BYPASS: If this is a Mock Bus, skip the backend and simulate success!
+      if (booking?.busId && booking.busId.startsWith('mock-')) {
+        await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate bank delay
+        
+        setProcessing(false);
+        setPaymentSuccess(true);
+        
+        setTimeout(() => {
+          navigate(`/booking-success/${bookingId}`);
+        }, 1500);
+        return; // Stop here so it doesn't crash on the backend
+      }
+
+      // 2. ✅ REAL DATA: Call the Real Backend API
       await paymentApi.processPayment({
-        bookingId, // This is the PNR passed from the URL
+        bookingId: bookingId,
         amount: booking.totalAmount,
-        paymentMethod
+        paymentMethod: paymentMethod
       });
       
-      alert("Payment Successful! 🎉 Ticket Confirmed.");
-      navigate('/my-bookings'); 
+      setProcessing(false);
+      setPaymentSuccess(true);
       
+      setTimeout(() => {
+        navigate(`/booking-success/${bookingId}`);
+      }, 1500);
+
     } catch (error) {
       console.error("Payment Failed", error);
-      alert("Payment failed. Please try again or check your booking status.");
-    } finally {
+      alert("Payment failed! Please try again or check your booking status.");
       setProcessing(false);
     }
   };
@@ -72,65 +87,56 @@ const Payment = () => {
   return (
     <div className="page-wrapper">
       <Navbar />
+      
+      {/* REALISTIC BANK PROCESSING MODAL */}
+      {processing && (
+        <div className="bank-modal-overlay">
+          <div className="bank-modal">
+            <div className="bank-loader"></div>
+            <h3>Connecting to Secure Server...</h3>
+            <p>Please do not press back or refresh the page.</p>
+            <div className="secure-badge">🔒 Bank Grade Encryption</div>
+          </div>
+        </div>
+      )}
+
+      {/* SUCCESS POPUP */}
+      {paymentSuccess && (
+        <div className="bank-modal-overlay">
+          <div className="bank-modal" style={{border: '2px solid #10b981'}}>
+            <div style={{fontSize: '4rem', marginBottom:'10px'}}>✅</div>
+            <h3 style={{color: '#10b981'}}>Payment Successful!</h3>
+            <p>Generating your ticket...</p>
+          </div>
+        </div>
+      )}
+
       <div className="payment-page-container">
-        
         <div className="payment-card-layout">
-          {/* Left: Payment Options */}
+          
           <div className="payment-methods">
             <h2>Select Payment Method</h2>
-            
-            <div 
-              className={`method-item ${paymentMethod === 'upi' ? 'active' : ''}`}
-              onClick={() => setPaymentMethod('upi')}
-            >
+            <div className={`method-item ${paymentMethod === 'upi' ? 'active' : ''}`} onClick={() => setPaymentMethod('upi')}>
               <span className="icon">📱</span> 
-              <div className="text">
-                <h4>UPI</h4>
-                <p>Google Pay, PhonePe, Paytm</p>
-              </div>
+              <div className="text"><h4>UPI</h4><p>Google Pay, PhonePe, Paytm</p></div>
             </div>
-
-            <div 
-              className={`method-item ${paymentMethod === 'card' ? 'active' : ''}`}
-              onClick={() => setPaymentMethod('card')}
-            >
+            <div className={`method-item ${paymentMethod === 'card' ? 'active' : ''}`} onClick={() => setPaymentMethod('card')}>
               <span className="icon">💳</span> 
-              <div className="text">
-                <h4>Credit / Debit Card</h4>
-                <p>Visa, Mastercard, Rupay</p>
-              </div>
-            </div>
-
-            <div 
-              className={`method-item ${paymentMethod === 'netbanking' ? 'active' : ''}`}
-              onClick={() => setPaymentMethod('netbanking')}
-            >
-              <span className="icon">🏦</span> 
-              <div className="text">
-                <h4>Net Banking</h4>
-                <p>All Indian Banks</p>
-              </div>
+              <div className="text"><h4>Credit / Debit Card</h4><p>Visa, Mastercard, Rupay</p></div>
             </div>
           </div>
 
-          {/* Right: Payment Details */}
           <div className="payment-summary-box">
             <h3>Payment Details</h3>
             <div className="summary-row">
                <span>Total Fare</span>
                <span>₹{booking?.totalAmount}</span>
             </div>
-            <div className="summary-row green">
-               <span>Discount</span>
-               <span>- ₹0</span>
-            </div>
-            <div className="divider"></div>
             <div className="total-row">
                <span>Total to Pay</span>
                <span>₹{booking?.totalAmount}</span>
             </div>
 
-            {/* Dynamic Form based on Selection */}
             <div className="payment-form">
                {paymentMethod === 'upi' && (
                  <input 
@@ -151,7 +157,7 @@ const Payment = () => {
                     value={cardDetails.number}
                     onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})}
                   />
-                  <div className="row">
+                  <div className="pay-input-row" style={{display:'flex', gap:'10px'}}>
                     <input 
                       type="text" 
                       placeholder="MM/YY" 
@@ -173,15 +179,10 @@ const Payment = () => {
                )}
             </div>
 
-            <button 
-              className="pay-now-btn" 
-              onClick={handlePayment}
-              disabled={processing}
-            >
-              {processing ? "Processing..." : `PAY ₹${booking?.totalAmount}`}
+            <button className="pay-now-btn" onClick={handlePayment} disabled={processing || paymentSuccess}>
+              PAY ₹{booking?.totalAmount}
             </button>
           </div>
-
         </div>
       </div>
       <Footer />
