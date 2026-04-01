@@ -2,6 +2,8 @@ package com.travelease.backend.services;
 
 import com.travelease.backend.dto.BookingRequest;
 import com.travelease.backend.dto.BookingResponse;
+import com.travelease.backend.dto.CartCheckoutRequest;
+import com.travelease.backend.dto.CartItemDto;
 import com.travelease.backend.models.Booking;
 import com.travelease.backend.models.Bus;
 import com.travelease.backend.models.User;
@@ -27,6 +29,66 @@ public class BookingService {
     private BusRepository busRepository;
     @Autowired
     private UserRepository userRepository;
+
+    // --- CART CHECKOUT LOGIC ---
+    
+    @Transactional
+    public List<BookingResponse> processCartCheckout(CartCheckoutRequest request, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // STEP 1: Verify all seats in the cart are still available
+        for (CartItemDto item : request.getCartItems()) {
+            Bus bus = busRepository.findById(item.getBusId())
+                    .orElseThrow(() -> new RuntimeException("Bus not found"));
+
+            if (bus.getAvailableSeats() < item.getSelectedSeats().size()) {
+                throw new RuntimeException("Not enough seats available for bus: " + bus.getOperator());
+            }
+
+            List<String> alreadyBooked = bus.getBookedSeats() != null ? bus.getBookedSeats() : new ArrayList<>();
+            for (String seat : item.getSelectedSeats()) {
+                if (alreadyBooked.contains(seat)) {
+                    throw new RuntimeException("Seat " + seat + " on bus " + bus.getOperator() + " was just booked by someone else!");
+                }
+            }
+        }
+
+        // STEP 2: All seats are available -> Process Bookings
+        List<BookingResponse> completedBookings = new ArrayList<>();
+        
+        for (CartItemDto item : request.getCartItems()) {
+            Bus bus = busRepository.findById(item.getBusId()).get();
+
+            // 1. Update Bus Inventory
+            bus.setAvailableSeats(bus.getAvailableSeats() - item.getSelectedSeats().size());
+            List<String> bookedSeats = bus.getBookedSeats() != null ? bus.getBookedSeats() : new ArrayList<>();
+            bookedSeats.addAll(item.getSelectedSeats());
+            bus.setBookedSeats(bookedSeats);
+            busRepository.save(bus);
+
+            // 2. Create Booking Record
+            Booking booking = new Booking();
+            booking.setUserId(user.getId());
+            booking.setBusId(bus.getId());
+            booking.setBookingId(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            booking.setBookingTime(LocalDateTime.now());
+            booking.setSeatsBooked(item.getSelectedSeats().size());
+            
+            // ✅ FIXED: Using setSeatNumbers instead of setSeats
+            booking.setSeatNumbers(item.getSelectedSeats());
+            booking.setTotalAmount(item.getTotalPrice());
+            booking.setStatus("CONFIRMED"); // Automatically confirmed for cart checkout
+            booking.setPaymentId("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase()); // Mock Txn ID
+            
+            Booking savedBooking = bookingRepository.save(booking);
+            completedBookings.add(mapToResponse(savedBooking));
+        }
+
+        return completedBookings;
+    }
+
+    // --- INDIVIDUAL BOOKING LOGIC ---
 
     @Transactional
     public Booking createBooking(BookingRequest request, String userEmail) {
@@ -67,7 +129,6 @@ public class BookingService {
 
     @Transactional
     public Booking confirmBooking(String bookingId, String transactionId) {
-        // ✅ FIXED: Use helper method to get Entity
         Booking booking = findBookingEntity(bookingId);
 
         if (!"PENDING".equals(booking.getStatus())) {
@@ -97,7 +158,6 @@ public class BookingService {
 
     @Transactional
     public void cancelBooking(String bookingId) {
-        // ✅ FIXED: Now calls findBookingEntity() which returns the Booking object (not DTO)
         Booking booking = findBookingEntity(bookingId); 
 
         if ("CONFIRMED".equals(booking.getStatus())) {
@@ -130,20 +190,16 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    // Public method for Controller (Returns DTO)
     public BookingResponse getBookingById(String id) {
         Booking booking = findBookingEntity(id);
         return mapToResponse(booking);
     }
 
-    // ✅ NEW HELPER METHOD: Returns the Booking Entity (for internal logic)
     private Booking findBookingEntity(String id) {
-        // 1. Try finding by PNR first
         Booking booking = bookingRepository.findByBookingId(id)
                 .stream().findFirst()
                 .orElse(null);
 
-        // 2. If not found, try by DB ID
         if (booking == null) {
             booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID/PNR: " + id));
@@ -151,7 +207,6 @@ public class BookingService {
         return booking;
     }
 
-    // Mapper Method
     private BookingResponse mapToResponse(Booking booking) {
         BookingResponse response = new BookingResponse();
         

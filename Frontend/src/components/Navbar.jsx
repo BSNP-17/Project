@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import { useCart } from '../context/CartContext'; // ✅ Added Cart Context
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { cart } = useCart(); // ✅ Get cart state
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -32,10 +34,28 @@ const Navbar = () => {
               <Link to="/register" className="btn-signup">Sign Up</Link>
             </>
           ) : (
-            <div className="user-menu-container">
+            <div className="user-menu-container" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <Link to="/home" className="nav-link">Home</Link>
               <Link to="/my-bookings" className="nav-link">My Trips</Link>
               
+              {/* ✅ NEW: Cart Icon with Badge */}
+              <button 
+                className="nav-link" 
+                onClick={() => navigate('/cart')}
+                style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0' }}
+              >
+                🛒 Cart
+                {cart?.length > 0 && (
+                  <span style={{
+                    position: 'absolute', top: '-10px', right: '-15px',
+                    background: '#ff6b35', color: 'white', borderRadius: '50%',
+                    padding: '2px 6px', fontSize: '0.7rem', fontWeight: 'bold'
+                  }}>
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+
               {/* User Avatar with Dropdown */}
               <div 
                 className="user-profile" 
