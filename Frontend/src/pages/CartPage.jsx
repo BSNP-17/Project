@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import useAuth from '../hooks/useAuth';           // ✅ Needed to get user.id
 import axiosClient from '../api/axiosClient';     // ✅ Needed to call the backend
 import Navbar from '../components/Navbar';
 import useAuth from '../hooks/useAuth'; // (Adjust the path if your useAuth is in a different folder)
