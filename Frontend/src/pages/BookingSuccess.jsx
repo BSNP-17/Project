@@ -7,7 +7,8 @@ import Spinner from '../components/Spinner';
 import './BookingSuccess.css';
 
 const BookingSuccess = () => {
-  const { bookingId } = useParams();
+  // ✅ FIXED: Grab 'id' from the URL but rename it to 'bookingId' for the API call
+  const { id: bookingId } = useParams();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,9 +21,9 @@ const BookingSuccess = () => {
       } catch (err) {
         console.error("Failed to fetch ticket", err);
         
-        // 🚀 Fallback Mock Data (Includes Arrival Time now)
+        // 🚀 Fallback Mock Data (In case the backend fails, the UI still works)
         const now = new Date();
-        const arrival = new Date(now.getTime() + (8.5 * 60 * 60 * 1000)); // Adds 8.5 hours
+        const arrival = new Date(now.getTime() + (8.5 * 60 * 60 * 1000)); 
         
         setTicket({
           id: bookingId || "PNR987654",
@@ -33,10 +34,10 @@ const BookingSuccess = () => {
             departureTime: now.toISOString(),
             arrivalTime: arrival.toISOString()
           },
-          fromCity: "Bangalore",
-          toCity: "Goa",
+          fromCity: "Bengaluru",
+          toCity: "Udupi",
           seatNumbers: ["U2A", "U2B"],
-          passengerDetails: ["John Doe", "Jane Doe"],
+          passengerDetails: ["Primary User"],
           totalAmount: 1700
         });
       } finally {
@@ -77,12 +78,12 @@ const BookingSuccess = () => {
           <div className="ticket-top">
             <div className="operator-logo">TE</div>
             <div className="operator-details">
-              <h3>{ticket?.bus?.operator || 'TravelEase Express'}</h3>
-              <p>{ticket?.bus?.busType}</p>
+              <h3>{ticket?.bus?.operator || ticket?.busName || 'TravelEase Express'}</h3>
+              <p>{ticket?.bus?.busType || ticket?.busType}</p>
             </div>
             <div className="pnr-badge">
               <span className="pnr-label">PNR No.</span>
-              <span className="pnr-value">{ticket?.id}</span>
+              <span className="pnr-value">{ticket?.id || ticket?.bookingId}</span>
             </div>
           </div>
 
@@ -93,7 +94,7 @@ const BookingSuccess = () => {
                 <span className="time">
                   {depTime ? new Date(depTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'}
                 </span>
-                <span className="city">{ticket?.fromCity}</span>
+                <span className="city">{ticket?.fromCity || ticket?.source}</span>
                 <span className="date">
                   {depTime ? new Date(depTime).toLocaleDateString() : ''}
                 </span>
@@ -111,7 +112,7 @@ const BookingSuccess = () => {
                 <span className="time" style={{ color: '#10b981' }}>
                   {arrTime ? new Date(arrTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'}
                 </span>
-                <span className="city">{ticket?.toCity}</span>
+                <span className="city">{ticket?.toCity || ticket?.destination}</span>
                 <span className="date">
                    {arrTime ? new Date(arrTime).toLocaleDateString() : 'Estimated'}
                 </span>
@@ -136,7 +137,7 @@ const BookingSuccess = () => {
             </div>
             
             <div className="qr-code-mock">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${ticket?.id}`} alt="QR Code" />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${ticket?.id || ticket?.bookingId}`} alt="QR Code" />
             </div>
           </div>
           

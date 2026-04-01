@@ -10,8 +10,8 @@ const BusResults = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const fromCity = searchParams.get("from") || "Bangalore";
-  const toCity = searchParams.get("to") || "Mysore";
+  const fromCity = searchParams.get("from") || "Bangaluru";
+  const toCity = searchParams.get("to") || "Mysuru";
   const searchDate = searchParams.get("date") || new Date().toISOString().split('T')[0];
 
   const [buses, setBuses] = useState([]);

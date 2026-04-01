@@ -14,8 +14,8 @@ const Home = () => {
   const tomorrow = tomorrowObj.toISOString().split('T')[0];
   
   const [searchData, setSearchData] = useState({ 
-    from: "Bangalore", 
-    to: "Mysore", 
+    from: "Bangaluru", 
+    to: "Mysuru", 
     date: today 
   });
 

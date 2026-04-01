@@ -1,13 +1,18 @@
+/* BookingSuccess.css */
+
 .success-container {
   max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
   min-height: 70vh;
 }
 
 .success-header {
   text-align: center;
-  margin-bottom: 30px;
 }
 
 .check-icon {
@@ -16,36 +21,41 @@
   background: #10b981;
   color: white;
   border-radius: 50%;
-  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 2rem;
   margin: 0 auto 15px;
-  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .success-header h2 {
-  color: #1e293b;
-  font-size: 1.8rem;
+  color: #1f2937;
+  font-size: 2rem;
   margin-bottom: 5px;
 }
 
-.success-header p { color: #64748b; }
-
-/* TICKET STYLING */
-.ticket-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 30px;
+.success-header p {
+  color: #6b7280;
 }
 
+/* 🎟️ REALISTIC TICKET DESIGN */
+.ticket-card {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+  filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05));
+}
+
+/* Top Section (Operator & PNR) */
 .ticket-top {
-  background: #1e293b;
-  color: white;
-  padding: 20px;
+  padding: 25px;
+  background: linear-gradient(to right, #ffffff, #f9fafb);
+  border-bottom: 2px dashed #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -55,29 +65,58 @@
   width: 50px;
   height: 50px;
   background: #ff6b35;
+  color: white;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 1.2rem;
 }
 
-.operator-details { flex: 1; margin-left: 15px; }
-.operator-details h3 { margin: 0; font-size: 1.2rem; }
-.operator-details p { margin: 5px 0 0; font-size: 0.85rem; opacity: 0.8; }
-
-.pnr-badge {
-  background: rgba(255,255,255,0.1);
-  padding: 8px 15px;
-  border-radius: 8px;
-  text-align: right;
+.operator-details {
+  flex: 1;
+  margin-left: 15px;
 }
 
-.pnr-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
-.pnr-value { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; }
+.operator-details h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.2rem;
+}
 
-.ticket-middle { padding: 30px 20px; border-bottom: 2px dashed #e2e8f0; }
+.operator-details p {
+  margin: 2px 0 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.pnr-badge {
+  text-align: right;
+  background: #f3f4f6;
+  padding: 8px 15px;
+  border-radius: 8px;
+}
+
+.pnr-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pnr-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+/* Middle Section (Route Grid) */
+.ticket-middle {
+  padding: 30px 25px;
+}
 
 .route-grid {
   display: flex;
@@ -85,57 +124,156 @@
   align-items: center;
 }
 
-.route-point { display: flex; flex-direction: column; }
-.route-point.right { text-align: right; }
-.route-point .time { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
-.route-point .city { font-size: 1.1rem; font-weight: 600; color: #475569; margin: 5px 0; }
-.route-point .date { font-size: 0.85rem; color: #94a3b8; }
+.route-point {
+  display: flex;
+  flex-direction: column;
+}
 
-.route-divider { flex: 1; display: flex; align-items: center; margin: 0 20px; position: relative; }
-.dash-line { flex: 1; height: 2px; border-top: 2px dashed #cbd5e1; }
-.bus-icon { position: absolute; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; font-size: 1.5rem; }
+.route-point.right {
+  text-align: right;
+}
 
+.route-point .time {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.route-point .city {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 5px 0;
+}
+
+.route-point .date {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.route-divider {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 0 20px;
+}
+
+.duration-badge {
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dash-line {
+  position: absolute;
+  top: 60%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-top: 2px dashed #cbd5e1;
+  z-index: 1;
+}
+
+.bus-icon {
+  background: white;
+  padding: 0 10px;
+  font-size: 1.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+/* Bottom Section (Passenger & QR) */
 .ticket-bottom {
-  padding: 20px;
+  padding: 25px;
   background: #f8fafc;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.passenger-info { display: flex; gap: 30px; flex-wrap: wrap; }
-.info-block label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-.info-block strong { font-size: 1rem; color: #1e293b; }
-.seat-highlight { color: #d84e55 !important; font-size: 1.2rem !important; }
-
-.qr-code-mock img { width: 80px; height: 80px; border-radius: 8px; }
-
-/* Buttons */
-.action-buttons { display: flex; gap: 15px; justify-content: center; }
-.action-buttons button { padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 1rem; transition: all 0.2s; }
-.btn-download { background: #d84e55; color: white; box-shadow: 0 4px 15px rgba(216, 78, 85, 0.3); }
-.btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216, 78, 85, 0.4); }
-.btn-home { background: white; color: #475569; border: 1px solid #cbd5e1 !important; }
-.btn-home:hover { background: #f1f5f9; }
-
-@media print {
-  body * { visibility: hidden; }
-  .ticket-card, .ticket-card * { visibility: visible; }
-  .ticket-card { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+.passenger-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  flex: 1;
 }
-/* Add this anywhere inside BookingSuccess.css */
 
-.duration-badge {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #f1f5f9;
-  color: #64748b;
-  padding: 4px 12px;
-  border-radius: 12px;
+.info-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-block label {
   font-size: 0.75rem;
-  font-weight: 700;
-  border: 1px solid #e2e8f0;
-  white-space: nowrap;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-block strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.seat-highlight {
+  color: #ff6b35 !important;
+  font-size: 1.2rem !important;
+}
+
+.qr-code-mock img {
+  border-radius: 8px;
+  border: 4px solid white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.btn-download, .btn-home {
+  flex: 1;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-download {
+  background: #1f2937;
+  color: white;
+}
+
+.btn-download:hover {
+  background: #111827;
+}
+
+.btn-home {
+  background: white;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-home:hover {
+  background: #f9fafb;
+}
+
+/* Print Styles */
+@media print {
+  body { background: white; }
+  .navbar, .footer, .action-buttons, .success-header { display: none !important; }
+  .ticket-card { box-shadow: none; border: 1px solid #000; margin-top: 20px; }
 }

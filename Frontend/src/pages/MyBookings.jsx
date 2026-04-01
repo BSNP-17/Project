@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import bookingApi from '../api/bookingApi'; 
+import axiosClient from '../api/axiosClient';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Spinner from '../components/Spinner';
-import './MyBooking.css'; // Matches your uploaded filename
+import Button from '../components/Button';
+import './MyBookings.css';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,106 +13,107 @@ const MyBookings = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchMyBookings = async () => {
       try {
-        // 1. Fetch from Backend
-        const response = await bookingApi.getMyBookings();
+        // Calls the @GetMapping("/my-bookings") in your Spring Boot BookingController
+        const response = await axiosClient.get('/bookings/my-bookings');
         
-        // 2. Sort: Newest First
+        // Sort bookings so the newest ones appear at the top
         const sortedBookings = response.data.sort((a, b) => 
           new Date(b.bookingTime) - new Date(a.bookingTime)
         );
         
         setBookings(sortedBookings);
       } catch (error) {
-        console.error("Failed to fetch bookings", error);
+        console.error("Failed to fetch bookings:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBookings();
+    fetchMyBookings();
   }, []);
+
+  // Helper to format dates nicely
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', 
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+  };
 
   if (loading) return <Spinner />;
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <Navbar />
       
-      <div className="my-bookings-page">
-        <div className="container">
-          <h1 className="page-title">My Bookings 🎟️</h1>
+      <div className="bookings-container">
+        <h2 className="page-title">My Trips 🎫</h2>
+        <p className="page-subtitle">Manage all your upcoming and past bus journeys here.</p>
 
-          {bookings.length === 0 ? (
-            <div className="no-bookings" style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <h3>No bookings found</h3>
-              <p style={{ color: '#666', marginBottom: '20px' }}>You haven't booked any trips yet.</p>
-              <button 
-                className="view-btn" 
-                style={{ background: '#ff6b35', color: 'white', border: 'none' }}
-                onClick={() => navigate('/home')}
-              >
-                Book a Trip
-              </button>
-            </div>
-          ) : (
-            <div className="bookings-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {bookings.map((booking) => (
-                <div key={booking.id} className="booking-card glass-panel" style={{ padding: '25px', background: 'white', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                  
-                  {/* Column 1: Bus Info & Status */}
-                  <div className="bus-info" style={{ flex: '1 1 250px' }}>
-                    <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: '1.2rem' }}>
-                      {booking.busName || "TravelEase Bus Service"}
-                    </h3>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <span className={`status-badge ${booking.status?.toLowerCase() || 'confirmed'}`}>
-                        {booking.status || "CONFIRMED"}
-                      </span>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-                        PNR: <strong>{booking.bookingId}</strong>
-                      </span>
-                    </div>
+        {bookings.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No trips found</h3>
+            <p>Looks like you haven't booked any buses yet!</p>
+            <Button text="Explore Routes" variant="primary" onClick={() => navigate('/home')} />
+          </div>
+        ) : (
+          <div className="bookings-list">
+            {bookings.map((ticket) => (
+              <div key={ticket.id} className="booking-card">
+                
+                <div className="booking-header">
+                  <div className="status-badge" data-status={ticket.status}>
+                    {ticket.status}
                   </div>
-
-                  {/* Column 2: Route & Date */}
-                  <div className="route-info" style={{ flex: '1 1 250px', textAlign: 'center' }}>
-                    <div style={{ fontWeight: '700', fontSize: '1.1rem', color: '#333', marginBottom: '5px' }}>
-                      {/* Note: If your backend doesn't send source/dest, we show generics or you can update backend */}
-                      {booking.source || "Source"} <span style={{ color: '#ff6b35' }}>➝</span> {booking.destination || "Destination"}
-                    </div>
-                    <div style={{ fontSize: '0.95rem', color: '#64748b' }}>
-                      {booking.bookingTime ? new Date(booking.bookingTime).toLocaleDateString() : "Date N/A"}
-                      <span style={{ margin: '0 8px' }}>•</span>
-                      {booking.bookingTime ? new Date(booking.bookingTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ""}
-                    </div>
-                    <div style={{ fontSize: '0.9rem', color: '#10b981', marginTop: '6px', fontWeight: '600' }}>
-                      Seats: {booking.seatNumbers ? booking.seatNumbers.join(', ') : 'Unassigned'}
-                    </div>
+                  <div className="pnr-info">
+                    <span>PNR:</span> <strong>{ticket.bookingId}</strong>
                   </div>
-
-                  {/* Column 3: Price & Actions */}
-                  <div className="action-col" style={{ flex: '0 0 auto', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-                    <div style={{ fontSize: '1.4rem', fontWeight: '800', color: '#2c3e50' }}>
-                      ₹{booking.totalAmount}
-                    </div>
-                    <button 
-                      className="view-btn" 
-                      onClick={() => navigate(`/booking-success/${booking.bookingId}`)}
-                      style={{ padding: '10px 20px', fontSize: '0.9rem' }}
-                    >
-                      View Ticket
-                    </button>
-                  </div>
-
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+                <div className="booking-body">
+                  <div className="route-details">
+                    {/* Maps to 'source' and 'destination' from BookingResponse.java */}
+                    <h3>{ticket.source} → {ticket.destination}</h3>
+                    <p className="bus-name">{ticket.busName} • {ticket.busType}</p>
+                  </div>
+                  
+                  <div className="time-details">
+                    <div className="time-block">
+                      <span className="label">Departure</span>
+                      <span className="value">{formatDate(ticket.departureTime)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="booking-footer">
+                  <div className="seat-details">
+                    <span className="label">Seats:</span>
+                    <span className="seats-list">{ticket.seatNumbers?.join(', ')}</span>
+                  </div>
+                  <div className="price-details">
+                    <span className="label">Total Paid:</span>
+                    <span className="price">₹{ticket.totalAmount}</span>
+                  </div>
+                  
+                  {/* Let users view their boarding pass again! */}
+                  <button 
+                    className="view-ticket-btn"
+                    onClick={() => navigate(`/booking-success/${ticket.bookingId}`)}
+                  >
+                    View E-Ticket
+                  </button>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      
+
       <Footer />
     </div>
   );
