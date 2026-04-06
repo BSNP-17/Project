@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import { useCart } from '../context/CartContext'; // ✅ Added Cart Context
+import useAuth from '../hooks/useAuth.js';
+import { useCart } from '../context/CartContext.jsx'; // ✅ Added Cart Context
 import './Navbar.css';
 
 const Navbar = () => {

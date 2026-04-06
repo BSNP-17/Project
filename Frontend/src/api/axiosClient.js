@@ -7,13 +7,15 @@ const axiosClient = axios.create({
   },
 });
 
-// (Keep the interceptor code below exactly as it is)
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    
+    // ✅ Safety Check: Only attach the token if it is actually a valid string
+    if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => {

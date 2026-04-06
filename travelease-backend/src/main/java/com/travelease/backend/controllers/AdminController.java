@@ -2,6 +2,7 @@ package com.travelease.backend.controllers;
 
 import com.travelease.backend.dto.DashboardStats;
 import com.travelease.backend.models.Booking;
+import com.travelease.backend.models.Bus;
 import com.travelease.backend.repositories.BookingRepository;
 import com.travelease.backend.repositories.BusRepository;
 import com.travelease.backend.repositories.UserRepository;
@@ -47,4 +48,25 @@ public class AdminController {
     public ResponseEntity<List<Booking>> getAllBookings() {
         return ResponseEntity.ok(bookingRepository.findAll());
     }
+    @GetMapping("/buses")
+public ResponseEntity<List<Bus>> getAllBuses() {
+    return ResponseEntity.ok(busRepository.findAll());
+}
+
+@PostMapping("/buses")
+public ResponseEntity<Bus> addBus(@RequestBody Bus bus) {
+    return ResponseEntity.ok(busRepository.save(bus));
+}
+
+@PutMapping("/buses/{id}")
+public ResponseEntity<Bus> updateBus(@PathVariable String id, @RequestBody Bus bus) {
+    bus.setId(id);
+    return ResponseEntity.ok(busRepository.save(bus));
+}
+
+@DeleteMapping("/buses/{id}")
+public ResponseEntity<Void> deleteBus(@PathVariable String id) {
+    busRepository.deleteById(id);
+    return ResponseEntity.noContent().build();
+}
 }

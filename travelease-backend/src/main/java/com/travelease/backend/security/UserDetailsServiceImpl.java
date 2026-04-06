@@ -2,23 +2,27 @@ package com.travelease.backend.security;
 
 import com.travelease.backend.models.User;
 import com.travelease.backend.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
+
     private final UserRepository userRepository;
 
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Find user by email (used as the username in this system)
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-        return new UserDetailsImpl(user);
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
+
+        // Return the custom implementation of UserDetails
+        return UserDetailsImpl.build(user);
     }
 }

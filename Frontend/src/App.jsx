@@ -1,15 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { CartProvider } from "./context/CartContext"; 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import BusResults from "./pages/BusResults";
-import SeatSelection from "./pages/SeatSelection";
-import Profile from "./pages/Profile";
-import Payment from "./pages/Payment";
-import MyBookings from "./pages/MyBookings";
-import CartPage from "./pages/CartPage"; 
-import BookingSuccess from "./pages/BookingSuccess"; // ✅ 1. ADD THIS IMPORT
+import { CartProvider } from "./context/CartContext.jsx"; // ✅ Import CartProvider
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Home from "./pages/Home.jsx";
+import BusResults from "./pages/BusResults.jsx";
+import SeatSelection from "./pages/SeatSelection.jsx";
+import Profile from "./pages/Profile.jsx";
+import Payment from "./pages/Payment.jsx";
+import MyBookings from "./pages/MyBookings.jsx";
+import CartPage from "./pages/CartPage.jsx"; 
+import BookingSuccess from "./pages/BookingSuccess.jsx"; // ✅ 1. ADD THIS IMPORT
 
 function App() {
   return (

@@ -14,7 +14,7 @@ const Home = () => {
   const tomorrow = tomorrowObj.toISOString().split('T')[0];
   
   const [searchData, setSearchData] = useState({ 
-    from: "Bangaluru", 
+    from: "Bengaluru", // ✅ FIXED: Spelled with 'e' to match database
     to: "Mysuru", 
     date: today 
   });
@@ -31,9 +31,9 @@ const Home = () => {
   };
 
   const trendingRoutes = [
-    { from: "Bangalore", to: "Goa", img: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&q=80", price: "850", searchDate: tomorrow },
+    { from: "Bengaluru", to: "Goa", img: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&q=80", price: "850", searchDate: tomorrow }, // ✅ FIXED spelling
     { from: "Mumbai", to: "Pune", img: "https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=600&q=80", price: "350", searchDate: tomorrow },
-    { from: "Chennai", to: "Bangalore", img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=600&q=80", price: "600", searchDate: tomorrow }
+    { from: "Chennai", to: "Bengaluru", img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=600&q=80", price: "600", searchDate: tomorrow } // ✅ FIXED spelling
   ];
 
   return (

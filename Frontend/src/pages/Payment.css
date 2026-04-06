@@ -1,10 +1,11 @@
 /* Payment.css */
 .payment-page-container {
-  background: #f4f4f4;
-  min-height: 80vh;
-  padding: 40px 20px;
+  background: #f8fafc; 
+  min-height: calc(100vh - 140px);
+  padding: 50px 20px;
   display: flex;
   justify-content: center;
+  align-items: flex-start; /* CRITICAL FIX: Stops the boxes from stretching! */
 }
 
 .payment-card-layout {
@@ -12,154 +13,187 @@
   gap: 30px;
   max-width: 1000px;
   width: 100%;
+  align-items: flex-start; 
 }
 
-/* Methods Section */
+/* --- Left Side: Methods --- */
 .payment-methods {
   flex: 1.5;
   background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
 }
 
 .payment-methods h2 {
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin-top: 0;
+  margin-bottom: 25px;
+  border-bottom: 2px dashed #e2e8f0;
   padding-bottom: 15px;
 }
 
 .method-item {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  gap: 20px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   margin-bottom: 15px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  background: #fff;
 }
 
 .method-item:hover {
-  background: #f9f9f9;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .method-item.active {
-  border-color: #ff6b35;
-  background: #fff5f0;
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .method-item .icon {
-  font-size: 1.5rem;
+  font-size: 2rem;
+  background: white;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.method-item h4 {
+.method-item .text h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.method-item .text p {
   margin: 0;
-  font-size: 1rem;
-  color: #333;
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
-.method-item p {
-  margin: 2px 0 0;
-  font-size: 0.8rem;
-  color: #888;
-}
-
-/* Summary Box */
+/* --- Right Side: Summary Box --- */
 .payment-summary-box {
   flex: 1;
   background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  height: fit-content;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  position: sticky; 
+  top: 100px;
 }
 
 .payment-summary-box h3 {
   margin: 0 0 20px;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  color: #1e293b;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.summary-row.green { color: #28a745; }
-
-.divider {
-  border-bottom: 1px dashed #ccc;
-  margin: 15px 0;
+  margin-bottom: 15px;
+  color: #64748b;
+  font-size: 1rem;
 }
 
 .total-row {
   display: flex;
   justify-content: space-between;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  color: #333;
-  margin-bottom: 20px;
+  color: #0f172a;
+  margin: 20px 0;
+  padding-top: 15px;
+  border-top: 2px dashed #e2e8f0;
 }
 
+/* --- Form Inputs --- */
 .payment-form {
   margin-bottom: 20px;
+  margin-top: 20px;
 }
 
 .pay-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  color: #1e293b;
+  transition: all 0.2s;
   outline: none;
+  box-sizing: border-box; 
 }
 
 .pay-input:focus {
-  border-color: #ff6b35;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 .pay-input-row {
   display: flex;
-  gap: 10px;
+  gap: 15px;
 }
 
+/* ✅ NEW: Payment Error Banner Styling */
+.payment-error-banner {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #f87171;
+}
+
+/* --- Pay Button --- */
 .pay-now-btn {
   width: 100%;
-  background: #ff6b35;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
-  padding: 15px;
-  font-size: 1rem;
+  padding: 16px;
+  font-size: 1.1rem;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .pay-now-btn:hover:not(:disabled) {
-  background: #e55a2b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .pay-now-btn:disabled {
-  background: #ccc;
+  background: #cbd5e1;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
-@media (max-width: 768px) {
-  .payment-card-layout { flex-direction: column; }
-}
-/* Add to existing Payment.css */
-
-/* Bank Simulation Modal */
+/* --- Bank Modal Animations --- */
 .bank-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(5px);
   z-index: 2000;
   display: flex;
@@ -170,46 +204,93 @@
 .bank-modal {
   background: white;
   padding: 40px;
-  border-radius: 12px;
+  border-radius: 16px;
   text-align: center;
   width: 90%;
-  max-width: 350px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .bank-loader {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #ff6b35;
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f1f5f9;
+  border-top: 6px solid #3b82f6;
   border-radius: 50%;
-  margin: 0 auto 20px;
+  margin: 0 auto 25px;
   animation: spin 1s linear infinite;
 }
 
 .bank-modal h3 {
-  color: #333;
-  margin-bottom: 10px;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
 }
 
 .bank-modal p {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 20px;
+  color: #64748b;
+  margin: 0 0 25px 0;
 }
 
 .secure-badge {
-  background: #f0fdf4;
-  color: #166534;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a7f3d0;
+  display: inline-block;
 }
 
 @keyframes popUp {
-  from { opacity: 0; transform: scale(0.8); }
+  from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Net Banking Dropdown --- */
+.bank-dropdown {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  transition: all 0.3s ease;
+  box-sizing: border-box; 
+  margin-bottom: 5px;
+}
+
+.bank-dropdown:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.secure-text {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 768px) {
+  .payment-card-layout { flex-direction: column; }
+  .payment-summary-box { position: static; }
 }

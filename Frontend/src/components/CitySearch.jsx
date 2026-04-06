@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cities } from "../data/cities"; // Importing the file you created in Step 1
+import { cities } from "../data/cities.js"; // Importing the file you created in Step 1
 import "./CitySearch.css";
 
 const CitySearch = ({ label, icon, value, onChange, placeholder }) => {

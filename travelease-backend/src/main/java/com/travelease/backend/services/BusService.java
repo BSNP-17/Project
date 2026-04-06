@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,28 @@ public class BusService {
 
     @Autowired
     private BusRepository busRepository;
+
+    public List<Bus> searchBuses(String from, String to, String date) {
+        // 1. Convert the string date (e.g., "2026-04-05") into a LocalDate
+        LocalDate localDate = LocalDate.parse(date);
+        
+        // 2. Create a 24-hour window for that specific day
+        LocalDateTime startOfDay = localDate.atStartOfDay(); 
+        LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX); 
+
+        // 3. Query MongoDB with Case-Insensitive cities and the date range
+        List<Bus> buses = busRepository.findByFromCityIgnoreCaseAndToCityIgnoreCaseAndDepartureTimeBetween(
+                from, 
+                to, 
+                startOfDay, 
+                endOfDay
+        );
+        
+        // 4. Final filter to ensure we only show buses with seats available
+        return buses.stream()
+                .filter(bus -> bus.getAvailableSeats() > 0)
+                .collect(Collectors.toList());
+    }
 
     public Bus addBus(BusRequest request) {
         Bus bus = new Bus();
@@ -39,15 +62,5 @@ public class BusService {
 
     public Bus getBusById(String id) {
         return busRepository.findById(id).orElseThrow(() -> new RuntimeException("Bus not found"));
-    }
-
-    public List<Bus> searchBuses(String from, String to, String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        List<Bus> buses = busRepository.findByFromCityAndToCity(from, to);
-        
-        return buses.stream()
-                .filter(bus -> bus.getDepartureTime().toLocalDate().equals(localDate))
-                .filter(bus -> bus.getAvailableSeats() > 0)
-                .collect(Collectors.toList());
     }
 }

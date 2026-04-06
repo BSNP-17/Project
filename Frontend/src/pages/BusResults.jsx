@@ -10,7 +10,7 @@ const BusResults = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const fromCity = searchParams.get("from") || "Bangaluru";
+  const fromCity = searchParams.get("from") || "Bengaluru";
   const toCity = searchParams.get("to") || "Mysuru";
   const searchDate = searchParams.get("date") || new Date().toISOString().split('T')[0];
 
@@ -18,19 +18,33 @@ const BusResults = () => {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("price");
 
+  // ALL FILTERS STATE (Bus Type + Departure Time)
+  const [filters, setFilters] = useState({
+    ac: false,
+    nonAc: false,
+    sleeper: false,
+    seater: false,
+    before6am: false,
+    am6to12pm: false,
+    pm12to6pm: false,
+    after6pm: false
+  });
+
   useEffect(() => {
     const fetchBuses = async () => {
       try {
         setLoading(true);
         const response = await busApi.searchBuses(fromCity, toCity, searchDate);
+        
+        // ✅ QA TEST 8 STRICT MODE: Do not load mock buses. Show empty state if not found.
         if (response.data && response.data.length > 0) {
           setBuses(response.data);
         } else {
-          loadMockBuses(); // Fallback if DB is empty
+          setBuses([]); 
         }
       } catch (err) {
-        console.warn("Backend unavailable. Loading Mock Data...");
-        loadMockBuses(); // Fallback if Backend is down
+        console.warn("Backend unavailable. QA Strict Mode: Returning 0 buses.");
+        setBuses([]); // ✅ Forces failure on invalid routes
       } finally {
         setLoading(false);
       }
@@ -38,72 +52,53 @@ const BusResults = () => {
     fetchBuses();
   }, [fromCity, toCity, searchDate]);
 
-  // 🚀 Realistic Mock Data (Ensures you always have UI to look at)
-  const loadMockBuses = () => {
-    const fakeBuses = [
-      {
-        id: "mock-1",
-        operator: "KSRTC (Airavat)",
-        busType: "Volvo Multi-Axle A/C Semi Sleeper (2+2)",
-        fromCity: fromCity,
-        toCity: toCity,
-        departureTime: `${searchDate}T06:30:00`,
-        arrivalTime: `${searchDate}T10:15:00`,
-        price: 450,
-        availableSeats: 24,
-        rating: 4.6,
-        amenities: ["Water Bottle", "Blanket", "Charging Point"]
-      },
-      {
-        id: "mock-2",
-        operator: "VRL Travels",
-        busType: "A/C Sleeper (2+1)",
-        fromCity: fromCity,
-        toCity: toCity,
-        departureTime: `${searchDate}T22:00:00`,
-        arrivalTime: `${searchDate}T04:30:00`, 
-        price: 850,
-        availableSeats: 8,
-        rating: 4.2,
-        amenities: ["Pillow", "Reading Light", "Charging Point", "WiFi"]
-      },
-      {
-        id: "mock-3",
-        operator: "SRS Travels",
-        busType: "Non A/C Seater (2+2)",
-        fromCity: fromCity,
-        toCity: toCity,
-        departureTime: `${searchDate}T14:00:00`,
-        arrivalTime: `${searchDate}T19:00:00`,
-        price: 350,
-        availableSeats: 32,
-        rating: 3.9,
-        amenities: ["Push Back Seats", "Emergency Exit"]
-      },
-      {
-        id: "mock-4",
-        operator: "IntrCity SmartBus",
-        busType: "A/C Sleeper/Seater (2+1)",
-        fromCity: fromCity,
-        toCity: toCity,
-        departureTime: `${searchDate}T23:30:00`,
-        arrivalTime: `${searchDate}T06:00:00`,
-        price: 999,
-        availableSeats: 4,
-        rating: 4.8,
-        amenities: ["Live Tracking", "Water Bottle", "Blanket", "Washroom"]
-      }
-    ];
-    setBuses(fakeBuses);
+  // HANDLE CHECKBOX CLICKS
+  const handleFilterChange = (e) => {
+    const { name, checked } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: checked }));
   };
 
-  // 🔀 Sorting Logic
-  const sortedBuses = [...buses].sort((a, b) => {
-    if (sortBy === "price") return a.price - b.price;
-    if (sortBy === "departure") return new Date(a.departureTime) - new Date(b.departureTime);
-    if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-    return 0;
-  });
+  // THE DUAL-FILTER ENGINE
+  const filteredAndSortedBuses = buses
+    .filter((bus) => {
+      // --- A. BUS TYPE FILTERING ---
+      const typeActive = filters.ac || filters.nonAc || filters.sleeper || filters.seater;
+      let typeMatch = !typeActive;
+
+      if (typeActive) {
+        const typeStr = (bus.busType || "").toLowerCase();
+        const isAc = (typeStr.includes("ac") || typeStr.includes("a/c")) && !typeStr.includes("non-ac") && !typeStr.includes("non ac");
+        const isNonAc = typeStr.includes("non-ac") || typeStr.includes("non ac");
+        const isSleeper = typeStr.includes("sleeper");
+        const isSeater = typeStr.includes("seater") || !isSleeper; 
+
+        if (filters.ac && isAc) typeMatch = true;
+        if (filters.nonAc && isNonAc) typeMatch = true;
+        if (filters.sleeper && isSleeper) typeMatch = true;
+        if (filters.seater && isSeater) typeMatch = true;
+      }
+
+      // --- B. DEPARTURE TIME FILTERING ---
+      const timeActive = filters.before6am || filters.am6to12pm || filters.pm12to6pm || filters.after6pm;
+      let timeMatch = !timeActive;
+
+      if (timeActive && bus.departureTime) {
+        const hour = new Date(bus.departureTime).getHours();
+        
+        if (filters.before6am && hour < 6) timeMatch = true;
+        if (filters.am6to12pm && hour >= 6 && hour < 12) timeMatch = true;
+        if (filters.pm12to6pm && hour >= 12 && hour < 18) timeMatch = true;
+        if (filters.after6pm && hour >= 18) timeMatch = true;
+      }
+
+      return typeMatch && timeMatch; 
+    })
+    .sort((a, b) => {
+      if (sortBy === "price") return a.price - b.price;
+      if (sortBy === "departure") return new Date(a.departureTime) - new Date(b.departureTime);
+      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+      return 0;
+    });
 
   if (loading) return <Spinner />;
 
@@ -111,7 +106,6 @@ const BusResults = () => {
     <div className="bus-results-page">
       <Navbar />
       
-      {/* 1. TOP HEADER (RedBus Style) */}
       <div className="results-header-banner">
         <div className="container header-flex">
           <div className="route-info">
@@ -124,59 +118,64 @@ const BusResults = () => {
 
       <div className="container results-layout">
         
-        {/* 2. FILTERS SIDEBAR */}
         <aside className="sidebar-filters">
           <div className="filter-block">
             <h3>FILTERS</h3>
+            
             <div className="filter-section">
               <h4>Bus Type</h4>
-              <label className="checkbox-label"><input type="checkbox" /> AC</label>
-              <label className="checkbox-label"><input type="checkbox" /> Non-AC</label>
-              <label className="checkbox-label"><input type="checkbox" /> Sleeper</label>
-              <label className="checkbox-label"><input type="checkbox" /> Seater</label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="ac" checked={filters.ac} onChange={handleFilterChange} /> AC
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="nonAc" checked={filters.nonAc} onChange={handleFilterChange} /> Non-AC
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="sleeper" checked={filters.sleeper} onChange={handleFilterChange} /> Sleeper
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="seater" checked={filters.seater} onChange={handleFilterChange} /> Seater
+              </label>
             </div>
             
             <div className="filter-section">
               <h4>Departure Time</h4>
-              <label className="checkbox-label"><input type="checkbox" /> Before 6 AM</label>
-              <label className="checkbox-label"><input type="checkbox" /> 6 AM to 12 PM</label>
-              <label className="checkbox-label"><input type="checkbox" /> 12 PM to 6 PM</label>
-              <label className="checkbox-label"><input type="checkbox" /> After 6 PM</label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="before6am" checked={filters.before6am} onChange={handleFilterChange} /> Before 6 AM
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="am6to12pm" checked={filters.am6to12pm} onChange={handleFilterChange} /> 6 AM to 12 PM
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="pm12to6pm" checked={filters.pm12to6pm} onChange={handleFilterChange} /> 12 PM to 6 PM
+              </label>
+              <label className="checkbox-label">
+                <input type="checkbox" name="after6pm" checked={filters.after6pm} onChange={handleFilterChange} /> After 6 PM
+              </label>
             </div>
+            
           </div>
         </aside>
 
-        {/* 3. MAIN CONTENT */}
         <main className="main-buses-list">
-          
-          {/* SORT TABS */}
           <div className="sort-tabs">
             <span className="sort-title">Sort By:</span>
-            <button 
-              className={sortBy === "price" ? "active" : ""} 
-              onClick={() => setSortBy("price")}
-            >
-              Cheapest
-            </button>
-            <button 
-              className={sortBy === "departure" ? "active" : ""} 
-              onClick={() => setSortBy("departure")}
-            >
-              Departure Time
-            </button>
-            <button 
-              className={sortBy === "rating" ? "active" : ""} 
-              onClick={() => setSortBy("rating")}
-            >
-              Highest Rated
-            </button>
+            <button className={sortBy === "price" ? "active" : ""} onClick={() => setSortBy("price")}>Cheapest</button>
+            <button className={sortBy === "departure" ? "active" : ""} onClick={() => setSortBy("departure")}>Departure Time</button>
+            <button className={sortBy === "rating" ? "active" : ""} onClick={() => setSortBy("rating")}>Highest Rated</button>
           </div>
 
-          {/* BUS CARDS */}
           <div className="cards-wrapper">
-            {sortedBuses.map((bus) => (
-              <BusCard key={bus.id} bus={bus} />
-            ))}
+            {filteredAndSortedBuses.length > 0 ? (
+              filteredAndSortedBuses.map((bus) => (
+                <BusCard key={bus.id} bus={bus} />
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', padding: '50px 0', color: '#64748b' }}>
+                <h3>No buses found for this route 🚌</h3>
+                <p>Try searching for a different date or city, or adjusting your filters.</p>
+              </div>
+            )}
           </div>
         </main>
       </div>

@@ -8,39 +8,53 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
-    
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    
-    @Value("${jwt.expiration:86400000}") // Default to 24 hours if not set
-    private long jwtExpirationMs;
+
+    @Value("${application.security.jwt.secret-key:your_very_long_secret_key_at_least_32_chars_long}")
+    private String secretKey;
+
+    @Value("${application.security.jwt.expiration:86400000}") // 24 hours in ms
+    private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        byte[] keyBytes = this.secretKey.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * GENERATE TOKEN - This is what your AuthController was missing
+     */
     public String generateToken(Authentication authentication) {
-        String username = authentication.getName(); // This gets the email
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         return Jwts.builder()
-                .subject(username)
+                .subject(userPrincipal.getEmail())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .expiration(new Date((new Date()).getTime() + jwtExpiration))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public String getEmailFromToken(String token) {
+        return extractClaim(token, Claims::getSubject);
     }
 
-    // Helper method used by JwtAuthenticationFilter
-    public String getEmailFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public boolean validateToken(String token) {
@@ -51,17 +65,12 @@ public class JwtService {
                 .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            // Log the error in a real app (e.g., e.printStackTrace())
-            return false;
+            System.err.println("JWT Validation Error: " + e.getMessage());
         }
+        return false;
     }
 
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claimsResolver.apply(claims);
+    public boolean isTokenValid(String token) {
+        return validateToken(token);
     }
 }

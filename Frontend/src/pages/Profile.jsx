@@ -6,7 +6,8 @@ import Footer from '../components/Footer';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, logout, loading } = useAuth();
+  // ✅ Extract 'login' from useAuth so we can update the global user state
+  const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   // State for toggling Edit Mode
@@ -46,8 +47,24 @@ const Profile = () => {
   const handleSave = (e) => {
     e.preventDefault();
     setIsEditing(false);
+    
+    // 1. Get the existing user data and token from local storage
+    const existingUserData = JSON.parse(localStorage.getItem('userData')) || {};
+    const token = localStorage.getItem('token');
+    
+    // 2. Merge the old data with the new form data
+    const updatedUser = {
+      ...existingUserData,
+      fullname: formData.fullname,
+      phone: formData.phone,
+      gender: formData.gender,
+      dob: formData.dob
+    };
+
+    // 3. Update localStorage and the global context at the same time!
+    login(updatedUser, token); 
+
     alert("Profile Updated Successfully! ✅");
-    // Here you would call an API to update the user in the backend
   };
 
   if (loading || !user) return <div className="loading-screen">Loading...</div>;

@@ -7,7 +7,8 @@ import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullname: "", email: "", password: "" });
+  // ✅ Added phoneNumber to initial state
+  const [form, setForm] = useState({ fullname: "", email: "", password: "", phoneNumber: "" });
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -73,6 +74,16 @@ const Register = () => {
               icon="📧"
               value={form.email}
               onChange={(e) => setForm({...form, email: e.target.value})}
+            />
+
+            {/* ✅ Added Phone Number Input */}
+            <FloatingInput
+              label="Phone Number"
+              name="phoneNumber"
+              type="tel"
+              icon="📱"
+              value={form.phoneNumber}
+              onChange={(e) => setForm({...form, phoneNumber: e.target.value})}
             />
 
             <FloatingInput

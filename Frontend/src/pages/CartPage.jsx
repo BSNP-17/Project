@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import axiosClient from '../api/axiosClient';     // ✅ Needed to call the backend
-import Navbar from '../components/Navbar';
-import useAuth from '../hooks/useAuth'; // (Adjust the path if your useAuth is in a different folder)
-import Footer from '../components/Footer';
-import Button from '../components/Button';
+import { useCart } from '../context/CartContext.jsx';
+import axiosClient from '../api/axiosClient.js';      // ✅ Fixed to .js
+import Navbar from '../components/Navbar.jsx';
+import useAuth from '../hooks/useAuth.js';            // ✅ Added .js
+import Footer from '../components/Footer.jsx';        // ✅ Added .jsx
+import Button from '../components/Button.jsx';        // ✅ Added .jsx
 import './BusResults.css'; 
 
 const CartPage = () => {

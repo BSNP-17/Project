@@ -2,11 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
-import { BookingProvider } from "./context/BookingContext"; // ✅ Import Provider
+
+// ✅ The fix: Added the .jsx extension to the import path
+import { BookingProvider } from "./context/BookingContext.jsx"; 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BookingProvider>  {/* ✅ Wrap App inside Provider */}
+    <BookingProvider>
       <App />
     </BookingProvider>
   </React.StrictMode>

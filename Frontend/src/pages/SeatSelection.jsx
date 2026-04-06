@@ -22,7 +22,7 @@ const SeatSelection = () => {
       try {
         setLoading(true);
         
-        // 🚀 BYPASS: If it's a mock bus from our fallback data
+        // 🚀 BYPASS: If it's a mock bus (Left in for safety during UI testing)
         if (busId.startsWith('mock-')) {
           setBus({
             id: busId, operator: "TravelEase Premium Express", busType: "A/C Sleeper (2+1)",
@@ -57,7 +57,10 @@ const SeatSelection = () => {
   };
 
   const handleProceed = async () => {
-    if (selectedSeats.length === 0) return alert('Select at least 1 seat');
+    // ✅ QA TEST 11: Booking without selecting seat -> Fail
+    if (!selectedSeats || selectedSeats.length === 0) {
+      return alert('⚠️ QA Rule 11: You must select at least 1 seat to proceed.');
+    }
     
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!userData) {
@@ -66,20 +69,27 @@ const SeatSelection = () => {
       return;
     }
 
+    // ✅ QA TEST 12: Booking with invalid passenger details -> Fail
+    // Ensure the mapped names array doesn't have blank values
+    const passengerNames = selectedSeats.map(() => userData.fullname || "");
+    const hasEmptyNames = passengerNames.some(name => name.trim() === "");
+    
+    if (hasEmptyNames) {
+      return alert("⚠️ QA Rule 12: Passenger details cannot be empty. Please update your profile name.");
+    }
+
     setLoading(true);
     try {
       let finalBookingId = "";
       let finalTotalAmount = selectedSeats.length * (bus?.price || 850);
 
-      // 🚀 BYPASS: Mock Booking creation for Mock Buses
       if (busId.startsWith('mock-')) {
-        finalBookingId = "PNR" + Math.floor(Math.random() * 900000 + 100000); // Fake PNR
-        await new Promise(r => setTimeout(r, 1000)); // Simulate delay
+        finalBookingId = "PNR" + Math.floor(Math.random() * 900000 + 100000);
+        await new Promise(r => setTimeout(r, 1000)); 
       } else {
-        // 🚀 REAL DATA: Create a PENDING booking in Spring Boot
         const bookingRequest = {
           busId: busId,
-          passengerDetails: selectedSeats.map(() => userData.fullname),
+          passengerDetails: passengerNames, // Send the validated names array
           seatNumbers: selectedSeats
         };
         const response = await bookingApi.createBooking(bookingRequest);
@@ -87,7 +97,6 @@ const SeatSelection = () => {
         finalTotalAmount = response.data.totalAmount;
       }
       
-      // Save data for the Payment Page
       updateBooking({
         busId,
         busDetails: { name: bus.operator, type: bus.busType, departure: bus.departureTime },
@@ -97,10 +106,23 @@ const SeatSelection = () => {
         to: bus.toCity
       });
 
-      // Redirect to Payment
       navigate(`/payment/${finalBookingId}`);
     } catch (err) {
-      alert("Booking Failed: " + (err.response?.data || "Network Error"));
+      // ✅ FIX: Safely extract the error message whether it's a string or an object
+      const errorData = err.response?.data;
+      
+      let errorMessage = "Network Error";
+      if (errorData) {
+        if (typeof errorData === 'string') {
+          errorMessage = errorData; // If backend sends a plain string
+        } else if (errorData.message) {
+          errorMessage = errorData.message; // If backend sends a standard Spring Boot error object
+        } else {
+          errorMessage = JSON.stringify(errorData); // Fallback: turn the object into a readable string
+        }
+      }
+
+      alert("Booking Failed: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -174,6 +196,7 @@ const SeatSelection = () => {
               <span>Total Amount</span>
               <span>₹{selectedSeats.length * (bus?.price || 0)}</span>
             </div>
+            {/* Disabled button styling remains, but handleProceed also guards against zero selections! */}
             <button className="proceed-btn" onClick={handleProceed} disabled={selectedSeats.length === 0}>
               PROCEED TO PAY
             </button>

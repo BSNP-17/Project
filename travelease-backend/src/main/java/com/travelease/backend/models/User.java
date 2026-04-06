@@ -12,6 +12,7 @@ public class User {
     private String email;
     private String password;
     private String fullname;
+    private String phoneNumber; // ✅ Added phone number
     private Set<String> roles; // ["user", "admin"]
     private boolean enabled = true;
 }
