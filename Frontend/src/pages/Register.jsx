@@ -31,7 +31,7 @@ const Register = () => {
       newErrors.fullname = "Name must be at least 3 characters.";
     }
 
-    // Email
+    // Email — standard format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!form.email.trim()) {
       newErrors.email = "Email address is required.";
@@ -39,10 +39,12 @@ const Register = () => {
       newErrors.email = "Enter a valid email address (e.g. name@example.com).";
     }
 
-    // Phone Number — Indian standard: exactly 10 digits, starts with 6-9
+    // Phone Number — Indian standard: exactly 10 digits, starts with 6–9
     const phoneRegex = /^[6-9]\d{9}$/;
     if (!form.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required.";
+    } else if (form.phoneNumber.trim().length !== 10) {
+      newErrors.phoneNumber = "Phone number must be exactly 10 digits.";
     } else if (!phoneRegex.test(form.phoneNumber.trim())) {
       newErrors.phoneNumber = "Enter a valid 10-digit Indian mobile number (starts with 6–9).";
     }
@@ -122,7 +124,7 @@ const Register = () => {
             />
 
             <FloatingInput
-              label="Phone Number"
+              label="Phone Number (10 digits)"
               name="phoneNumber"
               type="tel"
               icon="📱"
@@ -174,6 +176,7 @@ const Register = () => {
       {showToast && (
         <SuccessToast
           message="Successfully Registered! 🎉"
+          subtitle="Your account is ready. Please sign in to continue."
           onClose={() => navigate('/login')}
         />
       )}
