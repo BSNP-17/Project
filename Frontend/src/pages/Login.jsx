@@ -2,14 +2,16 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../api/authApi.js";
 import useAuth from "../hooks/useAuth.js";
-import FloatingInput from "../components/FloatingInput.jsx"; // ✅ Imported your awesome component
-import "./Auth.css"; 
+import FloatingInput from "../components/FloatingInput.jsx";
+import SuccessToast from "../components/SuccessToast.jsx";
+import "./Auth.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -20,13 +22,12 @@ const Login = () => {
 
     try {
       const response = await authApi.login({ email, password });
-      
-      const token = response.data.token || response.data.jwt; 
+
+      const token = response.data.token || response.data.jwt;
       const userData = response.data.user || response.data;
 
-      login(userData, token); 
-      
-      navigate("/home");
+      login(userData, token);
+      setShowToast(true);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError("Incorrect email or password. Please try again.");
@@ -59,8 +60,7 @@ const Login = () => {
           <form onSubmit={handleLogin}>
             {error && <div className="alert-error">⚠️ {error}</div>}
 
-            {/* ✅ Using FloatingInput for a premium look */}
-            <FloatingInput 
+            <FloatingInput
               label="Email Address"
               type="email"
               value={email}
@@ -68,7 +68,7 @@ const Login = () => {
               icon="✉️"
             />
 
-            <FloatingInput 
+            <FloatingInput
               label="Password"
               type="password"
               value={password}
@@ -83,11 +83,19 @@ const Login = () => {
 
           <div className="auth-footer">
             <p>
-              Don't have an account? <Link to="/register">Sign Up</Link>
+              Don&apos;t have an account? <Link to="/register">Sign Up</Link>
             </p>
           </div>
         </div>
       </div>
+
+      {showToast && (
+        <SuccessToast
+          message="Login Successful! 🎉"
+          subtitle="Welcome back to TravelEase! Ready to explore?"
+          onClose={() => navigate("/home")}
+        />
+      )}
     </div>
   );
 };
