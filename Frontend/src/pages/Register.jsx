@@ -7,7 +7,14 @@ import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullname: "", email: "", password: "", phoneNumber: "" });
+  const [form, setForm] = useState({
+    fullname: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+    gender: "",
+    dob: ""
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -54,6 +61,23 @@ const Register = () => {
       newErrors.password = "Password is required.";
     } else if (form.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters.";
+    }
+
+    // Gender
+    if (!form.gender) {
+      newErrors.gender = "Please select your gender.";
+    }
+
+    // Date of Birth
+    if (!form.dob) {
+      newErrors.dob = "Date of birth is required.";
+    } else {
+      const today = new Date();
+      const birthDate = new Date(form.dob);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      if (age < 5 || birthDate > today) {
+        newErrors.dob = "Please enter a valid date of birth.";
+      }
     }
 
     return newErrors;
@@ -130,12 +154,46 @@ const Register = () => {
               icon="📱"
               value={form.phoneNumber}
               onChange={(e) => {
-                // Allow only digits, max 10
                 const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                 setForm({...form, phoneNumber: val});
               }}
               error={errors.phoneNumber}
             />
+
+            {/* Gender Select */}
+            <div className={`reg-field-group ${errors.gender ? 'has-error' : ''}`}>
+              <div className="reg-select-wrapper">
+                <span className="reg-field-icon">🧑</span>
+                <select
+                  className="reg-select"
+                  value={form.gender}
+                  onChange={(e) => setForm({...form, gender: e.target.value})}
+                >
+                  <option value="" disabled>Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <label className={`reg-field-label ${form.gender ? 'active' : ''}`}>Gender</label>
+              </div>
+              {errors.gender && <span className="error-text">{errors.gender}</span>}
+            </div>
+
+            {/* Date of Birth */}
+            <div className={`reg-field-group ${errors.dob ? 'has-error' : ''}`}>
+              <div className="reg-select-wrapper">
+                <span className="reg-field-icon">🎂</span>
+                <input
+                  className="reg-date"
+                  type="date"
+                  value={form.dob}
+                  onChange={(e) => setForm({...form, dob: e.target.value})}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+                <label className={`reg-field-label ${form.dob ? 'active' : ''}`}>Date of Birth</label>
+              </div>
+              {errors.dob && <span className="error-text">{errors.dob}</span>}
+            </div>
 
             <FloatingInput
               label="Create Password"

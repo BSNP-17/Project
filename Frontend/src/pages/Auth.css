@@ -7,19 +7,14 @@
   width: 100vw;
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: #fff;
-  overflow: hidden; /* Prevents scrollbars on the main page */
+  overflow: hidden;
 }
 
 /* LEFT SIDE - IMAGE */
 .auth-banner {
-  flex: 1.2; /* Takes up 55% of the width */
-  
-  /* 1. Fallback Gradient (Visible if image fails/loads slow) */
-  background: linear-gradient(135deg, #ff6b35, #d94e1f); 
-  
-  /* 2. The Image (High Quality & Optimized) */
+  flex: 1.2;
+  background: linear-gradient(135deg, #ff6b35, #d94e1f);
   background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') !important;
-  
   background-size: cover;
   background-position: center;
   position: relative;
@@ -31,12 +26,10 @@
   min-height: 100vh;
 }
 
-/* Dark Overlay (Keeps text readable) */
 .auth-banner::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  /* Slightly darker gradient for better text contrast */
   background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.8));
   z-index: 1;
 }
@@ -62,19 +55,19 @@
 
 /* RIGHT SIDE - FORM */
 .auth-form-container {
-  flex: 0.8; /* Takes up 45% of the width */
+  flex: 0.8;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Center the card horizontally */
+  align-items: center;
   padding: 2rem;
   background: #fff;
-  overflow-y: auto; /* Allow scrolling if form is tall */
+  overflow-y: auto;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 440px; /* Limits width on big screens */
+  max-width: 440px;
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -136,7 +129,7 @@
   cursor: pointer;
 }
 
-/* --- 4. EXTRAS (Social, Divider, Footer) --- */
+/* --- 4. EXTRAS --- */
 .divider {
   display: flex;
   align-items: center;
@@ -174,12 +167,10 @@
   color: #475569;
   cursor: pointer;
   transition: all 0.2s;
-  
-  /* Flexbox for centering Icon + Text */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; 
+  gap: 10px;
   font-size: 0.95rem;
 }
 
@@ -240,7 +231,89 @@
   color: #64748b;
 }
 
-/* --- 5. ANIMATIONS --- */
+/* --- 5. GENDER & DOB FIELDS (Register page) --- */
+.reg-field-group {
+  margin-bottom: 20px;
+}
+
+.reg-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.reg-select-wrapper:focus-within {
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+  background: #fff;
+}
+
+.reg-field-group.has-error .reg-select-wrapper {
+  border-color: #ef4444;
+}
+
+.reg-field-icon {
+  padding: 0 12px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.reg-select,
+.reg-date {
+  width: 100%;
+  padding: 20px 14px 8px 0;
+  border: none;
+  background: transparent;
+  font-size: 0.98rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #1e293b;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.reg-date {
+  cursor: text;
+  color: #1e293b;
+}
+
+.reg-field-label {
+  position: absolute;
+  left: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.98rem;
+  color: #94a3b8;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.reg-field-label.active,
+.reg-select-wrapper:focus-within .reg-field-label {
+  top: 10px;
+  transform: translateY(0);
+  font-size: 0.72rem;
+  color: #ff6b35;
+  font-weight: 600;
+}
+
+.error-text {
+  display: block;
+  color: #ef4444;
+  font-size: 0.78rem;
+  margin-top: 5px;
+  padding-left: 4px;
+}
+
+/* --- 6. ANIMATIONS --- */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -251,10 +324,10 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- 6. MOBILE RESPONSIVE --- */
+/* --- 7. MOBILE RESPONSIVE --- */
 @media (max-width: 900px) {
   .auth-banner {
-    display: none; /* Hide image on small screens/mobiles */
+    display: none;
   }
   .auth-form-container {
     flex: 1;
