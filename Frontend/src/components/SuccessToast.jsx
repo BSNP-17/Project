@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-// SuccessToast.jsx (keep this import)
-import './SuccessToast.css';  // ✅ CSS stays HERE only
+import { useEffect } from 'react';
+// SuccessToast.jsx
+import './SuccessToast.css';
 
-
-const SuccessToast = ({ message = "Successfully Registered! 🎉", onClose }) => {
+const SuccessToast = ({ message = "Success! 🎉", subtitle = "Welcome to TravelEase! Ready to explore?", onClose }) => {
   useEffect(() => {
     // Auto close after 4 seconds
     const timer = setTimeout(() => {
@@ -24,7 +23,7 @@ const SuccessToast = ({ message = "Successfully Registered! 🎉", onClose }) =>
           </div>
         </div>
         <h3 className="toast-title">{message}</h3>
-        <p className="toast-subtitle">Welcome to TravelEase! Ready to explore?</p>
+        <p className="toast-subtitle">{subtitle}</p>
         <button className="close-toast" onClick={onClose}>✕</button>
         <div className="confetti"></div>
       </div>
