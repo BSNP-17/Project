@@ -22,13 +22,21 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired private BusRepository busRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
-    // 1. FIXED: Updated spellings to exactly match React frontend dropdowns
+    // =====================================================
+    //   FIXED ADMIN CREDENTIALS — DO NOT SHARE PUBLICLY
+    // =====================================================
+    private static final String ADMIN_FULLNAME     = "TravelEase Administrator";
+    private static final String ADMIN_USERNAME     = "te_admin_2025";
+    private static final String ADMIN_EMAIL        = "te.superadmin@travelease.in";
+    private static final String ADMIN_PHONE        = "+91-98451-77302";
+    private static final String ADMIN_PASSWORD_RAW = "TE@Admin#9281!";
+    // =====================================================
+
     private static final List<String> HUBS = Arrays.asList(
-        "Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi", 
+        "Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi",
         "Davangere", "Shimoga", "Udupi", "Goa", "Hyderabad"
     );
 
-    // 2. CONNECTED TOWNS
     private static final List<String> DESTINATIONS = Arrays.asList(
         "Manipal", "Kukke Subramanya", "Dharmasthala", "Chikmagalur", "Coorg", "Madikeri",
         "Hassan", "Tumkur", "Chitradurga", "Bellary", "Raichur", "Bidar", "Bijapur", "Bagalkot",
@@ -36,78 +44,84 @@ public class DataSeeder implements CommandLineRunner {
         "Kundapura", "Murudeshwar", "Dandeli", "Badami"
     );
 
-    // 3. OPERATORS
     private static final List<String> OPERATORS = Arrays.asList(
         "KSRTC (Airavat)", "KSRTC (Rajahamsa)", "KSRTC (Ambari Dream)",
         "VRL Travels", "SRS Travels", "Sugama Tourist", "Durgamba Motors",
         "Orange Tours", "Seabird Tourists", "Canara Pinto", "Reshma Travels", "IntrCity SmartBus"
     );
 
-    // 4. BUS TYPES
     private static final List<String> TYPES = Arrays.asList(
-        "AC Sleeper (2+1)", "Non-AC Seater (2+2)", "Volvo Multi-Axle AC", "Scania AC Semi-Sleeper", "Electric AC"
+        "AC Sleeper (2+1)", "Non-AC Seater (2+2)", "Volvo Multi-Axle AC",
+        "Scania AC Semi-Sleeper", "Electric AC"
     );
 
     @Override
     public void run(String... args) {
-        seedUsers();
+        seedAdminUser();
         seedBuses();
     }
 
-    private void seedUsers() {
-        if (userRepository.count() == 0) {
-            User admin = new User();
-            admin.setFullname("Admin User");
-            admin.setEmail("admin@travelease.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRoles(new HashSet<>(Collections.singletonList("ADMIN")));
+    /**
+     * Upsert admin user — always ensures the fixed admin exists
+     * with the correct credentials even if DB is wiped and re-seeded.
+     */
+    private void seedAdminUser() {
+        Optional<User> existing = userRepository.findByEmail(ADMIN_EMAIL);
+
+        if (existing.isPresent()) {
+            // Admin already exists — ensure role is correct
+            User admin = existing.get();
+            admin.setRoles(new HashSet<>(Arrays.asList("ROLE_USER", "ROLE_ADMIN")));
             userRepository.save(admin);
-            System.out.println("✅ DataSeeder: Admin Account Created.");
+            System.out.println("✅ DataSeeder: Admin account already exists — roles verified.");
+        } else {
+            // Create fresh admin
+            User admin = new User();
+            admin.setFullname(ADMIN_FULLNAME);
+            admin.setEmail(ADMIN_EMAIL);
+            admin.setPhoneNumber(ADMIN_PHONE);
+            admin.setPassword(passwordEncoder.encode(ADMIN_PASSWORD_RAW));
+            admin.setRoles(new HashSet<>(Arrays.asList("ROLE_USER", "ROLE_ADMIN")));
+            admin.setEnabled(true);
+            userRepository.save(admin);
+
+            System.out.println("✅ DataSeeder: Admin account created successfully.");
+            System.out.println("======================================================");
+            System.out.println("  ADMIN LOGIN CREDENTIALS");
+            System.out.println("  Email    : " + ADMIN_EMAIL);
+            System.out.println("  Password : " + ADMIN_PASSWORD_RAW);
+            System.out.println("  Phone    : " + ADMIN_PHONE);
+            System.out.println("======================================================");
         }
     }
 
     private void seedBuses() {
-        // 🚨 CRITICAL CHANGE: We now clear the old buses every time the server starts.
-        // This ensures dates are always fresh and you never search for expired buses.
         busRepository.deleteAll();
         System.out.println("🧹 DataSeeder: Cleared old, expired buses.");
-
         System.out.println("🚀 DataSeeder: Generating comprehensive bus network...");
-        List<Bus> buses = new ArrayList<>();
-        
-        // DYNAMIC DATES: Always starts from "Today" and goes 30 days into the future
-        LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusDays(30); 
 
-        // Generate buses
+        List<Bus> buses = new ArrayList<>();
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusDays(30);
+
         for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
             for (String from : HUBS) {
-                
-                // Hub to Hub
                 for (String to : HUBS) {
                     if (!from.equals(to)) {
                         buses.addAll(generateDailyBuses(date, from, to, 3));
                     }
                 }
-
-                // Hub to Destination
                 for (String to : DESTINATIONS) {
-                    buses.addAll(generateDailyBuses(date, from, to, 1)); // Reduced to 1 to save memory
+                    buses.addAll(generateDailyBuses(date, from, to, 1));
                     buses.addAll(generateDailyBuses(date, to, from, 1));
                 }
             }
-
-            // Save in batches
             if (buses.size() > 1000) {
                 busRepository.saveAll(buses);
                 buses.clear();
             }
         }
-
-        if (!buses.isEmpty()) {
-            busRepository.saveAll(buses);
-        }
-
+        if (!buses.isEmpty()) busRepository.saveAll(buses);
         System.out.println("✅ DataSeeder: COMPLETE! Database populated with fresh schedules.");
     }
 
@@ -117,13 +131,13 @@ public class DataSeeder implements CommandLineRunner {
 
         for (int i = 0; i < count; i++) {
             int hour;
-            if (i == 0) hour = 6 + random.nextInt(4); // Morning
-            else if (i == 1) hour = 19 + random.nextInt(4); // Night
-            else hour = 12 + random.nextInt(6); // Afternoon
-            
+            if (i == 0) hour = 6 + random.nextInt(4);
+            else if (i == 1) hour = 19 + random.nextInt(4);
+            else hour = 12 + random.nextInt(6);
+
             int minute = random.nextBoolean() ? 0 : 30;
             LocalDateTime departure = LocalDateTime.of(date, LocalTime.of(hour, minute));
-            
+
             boolean isLongDistance = HUBS.contains(from) && HUBS.contains(to);
             int durationHours = isLongDistance ? (7 + random.nextInt(5)) : (4 + random.nextInt(4));
             LocalDateTime arrival = departure.plusHours(durationHours);
@@ -137,12 +151,11 @@ public class DataSeeder implements CommandLineRunner {
             double price = Math.round(basePrice / 10.0) * 10.0;
 
             Bus bus = new Bus();
-            bus.setBusNumber("KA-" + (10 + random.nextInt(89)) + "-" + 
-                            (char)('A' + random.nextInt(26)) + (char)('A' + random.nextInt(26)) + 
-                            "-" + (1000 + random.nextInt(8999)));
-            
-            // Note: Make sure these setter names match your Bus.java model!
-            bus.setOperator(operator); 
+            bus.setBusNumber("KA-" + (10 + random.nextInt(89)) + "-"
+                    + (char) ('A' + random.nextInt(26))
+                    + (char) ('A' + random.nextInt(26))
+                    + "-" + (1000 + random.nextInt(8999)));
+            bus.setOperator(operator);
             bus.setFromCity(from);
             bus.setToCity(to);
             bus.setBusType(type);
@@ -151,7 +164,7 @@ public class DataSeeder implements CommandLineRunner {
             bus.setAvailableSeats(bus.getTotalSeats());
             bus.setDepartureTime(departure);
             bus.setArrivalTime(arrival);
-            
+
             List<String> amenities = new ArrayList<>(Arrays.asList("Water Bottle", "Charging Point"));
             if (type.contains("AC")) amenities.add("Reading Light");
             if (type.contains("Sleeper")) amenities.add("Blanket");
