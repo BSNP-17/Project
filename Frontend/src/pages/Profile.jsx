@@ -28,6 +28,7 @@ const Profile = () => {
       setFormData({
         fullname: user.fullname || '',
         email: user.email || '',
+        // Support both "phone" and "phoneNumber" keys from backend/registration
         phone: user.phone || user.phoneNumber || '',
         gender: user.gender || 'Select Gender',
         dob: user.dob || ''
@@ -49,11 +50,12 @@ const Profile = () => {
     const existingUserData = JSON.parse(localStorage.getItem('userData')) || {};
     const token = localStorage.getItem('token');
 
+    // Keep all original registration fields intact, update only editable ones
     const updatedUser = {
       ...existingUserData,
       fullname: formData.fullname,
       phone: formData.phone,
-      phoneNumber: formData.phone,
+      phoneNumber: formData.phone,  // keep both keys in sync
       gender: formData.gender,
       dob: formData.dob
     };
@@ -213,6 +215,7 @@ const Profile = () => {
       {showToast && (
         <SuccessToast
           message="Profile Updated Successfully! ✅"
+          subtitle="Your changes have been saved."
           onClose={() => setShowToast(false)}
         />
       )}
