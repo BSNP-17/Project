@@ -10,18 +10,21 @@ const adminApi = {
   // Dashboard Stats
   getStats: () => axios.get(`${API_BASE}/stats`, getAuthHeader()),
 
-  // Bus Management
-  getAllBuses: () => axios.get(`${API_BASE}/buses`, getAuthHeader()),
+  // Bus Management - paginated
+  getAllBuses: (page = 0, size = 15) =>
+    axios.get(`${API_BASE}/buses?page=${page}&size=${size}`, getAuthHeader()),
   addBus: (bus) => axios.post(`${API_BASE}/buses`, bus, getAuthHeader()),
   updateBus: (id, bus) => axios.put(`${API_BASE}/buses/${id}`, bus, getAuthHeader()),
   deleteBus: (id) => axios.delete(`${API_BASE}/buses/${id}`, getAuthHeader()),
 
-  // Booking Management
-  getAllBookings: () => axios.get(`${API_BASE}/all-bookings`, getAuthHeader()),
+  // Booking Management - paginated
+  getAllBookings: (page = 0, size = 15) =>
+    axios.get(`${API_BASE}/all-bookings?page=${page}&size=${size}`, getAuthHeader()),
   cancelBooking: (id) => axios.delete(`${API_BASE}/bookings/${id}`, getAuthHeader()),
 
-  // User Management
-  getAllUsers: () => axios.get(`${API_BASE}/users`, getAuthHeader()),
+  // User Management - paginated
+  getAllUsers: (page = 0, size = 15) =>
+    axios.get(`${API_BASE}/users?page=${page}&size=${size}`, getAuthHeader()),
   deleteUser: (id) => axios.delete(`${API_BASE}/users/${id}`, getAuthHeader()),
 };
 

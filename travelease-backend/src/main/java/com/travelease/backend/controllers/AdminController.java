@@ -8,6 +8,10 @@ import com.travelease.backend.repositories.BookingRepository;
 import com.travelease.backend.repositories.BusRepository;
 import com.travelease.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,23 +35,29 @@ public class AdminController {
         long usersCount = userRepository.count();
         long busesCount = busRepository.count();
         long bookingsCount = bookingRepository.count();
+        // Only sum from bookings - no findAll() on buses
         double totalRevenue = bookingRepository.findAll().stream()
                 .mapToDouble(Booking::getTotalAmount).sum();
         return ResponseEntity.ok(new DashboardStats(usersCount, busesCount, bookingsCount, totalRevenue));
     }
 
-    // ==================== BUS MANAGEMENT ====================
+    // ==================== BUS MANAGEMENT (PAGINATED) ====================
 
     @GetMapping("/buses")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Bus>> getAllBuses() {
-        return ResponseEntity.ok(busRepository.findAll());
+    public ResponseEntity<Page<Bus>> getAllBuses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "departureTime") String sortBy
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortBy));
+        return ResponseEntity.ok(busRepository.findAll(pageable));
     }
 
     @PostMapping("/buses")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Bus> addBus(@RequestBody Bus bus) {
-        bus.setId(null); // Ensure new document
+        bus.setId(null);
         return ResponseEntity.ok(busRepository.save(bus));
     }
 
@@ -65,12 +75,16 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================== BOOKING MANAGEMENT ====================
+    // ==================== BOOKING MANAGEMENT (PAGINATED) ====================
 
     @GetMapping("/all-bookings")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Booking>> getAllBookings() {
-        return ResponseEntity.ok(bookingRepository.findAll());
+    public ResponseEntity<Page<Booking>> getAllBookings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "bookingTime"));
+        return ResponseEntity.ok(bookingRepository.findAll(pageable));
     }
 
     @DeleteMapping("/bookings/{id}")
@@ -80,12 +94,16 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================== USER MANAGEMENT ====================
+    // ==================== USER MANAGEMENT (PAGINATED) ====================
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+    public ResponseEntity<Page<User>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "fullname"));
+        return ResponseEntity.ok(userRepository.findAll(pageable));
     }
 
     @DeleteMapping("/users/{id}")
