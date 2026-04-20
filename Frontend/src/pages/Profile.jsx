@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Navbar from '../components/Navbar';
@@ -9,10 +9,12 @@ import './Profile.css';
 const Profile = () => {
   const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
   const [showToast, setShowToast] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   const [formData, setFormData] = useState({
     fullname: '',
@@ -22,17 +24,19 @@ const Profile = () => {
     dob: ''
   });
 
-  // Load user data — map phoneNumber (from registration) → phone
+  // Load user data + saved profile photo
   useEffect(() => {
     if (user) {
       setFormData({
         fullname: user.fullname || '',
         email: user.email || '',
-        // Support both "phone" and "phoneNumber" keys from backend/registration
         phone: user.phone || user.phoneNumber || '',
         gender: user.gender || 'Select Gender',
         dob: user.dob || ''
       });
+      // Load saved photo from localStorage
+      const savedPhoto = localStorage.getItem('profilePhoto');
+      if (savedPhoto) setProfilePhoto(savedPhoto);
     } else if (!loading) {
       navigate('/login');
     }
@@ -43,6 +47,26 @@ const Profile = () => {
     navigate('/login');
   };
 
+  // Handle photo file selection
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePhoto(reader.result);
+      localStorage.setItem('profilePhoto', reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
     setIsEditing(false);
@@ -50,12 +74,11 @@ const Profile = () => {
     const existingUserData = JSON.parse(localStorage.getItem('userData')) || {};
     const token = localStorage.getItem('token');
 
-    // Keep all original registration fields intact, update only editable ones
     const updatedUser = {
       ...existingUserData,
       fullname: formData.fullname,
       phone: formData.phone,
-      phoneNumber: formData.phone,  // keep both keys in sync
+      phoneNumber: formData.phone,
       gender: formData.gender,
       dob: formData.dob
     };
@@ -75,11 +98,37 @@ const Profile = () => {
         {/* --- LEFT SIDEBAR --- */}
         <aside className="profile-sidebar">
           <div className="sidebar-header">
-            <div className="profile-avatar">
-              {user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
+
+            {/* Profile Photo with upload overlay */}
+            <div className="avatar-wrapper" onClick={() => fileInputRef.current.click()}>
+              {profilePhoto ? (
+                <img
+                  src={profilePhoto}
+                  alt="Profile"
+                  className="profile-photo"
+                />
+              ) : (
+                <div className="profile-avatar">
+                  {user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+              <div className="avatar-overlay">
+                <span className="camera-icon">📷</span>
+                <span className="avatar-overlay-text">Change</span>
+              </div>
             </div>
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handlePhotoChange}
+            />
+
             <div className="sidebar-user-details">
-              <h3>{user.fullname || "User"}</h3>
+              <h3>{user.fullname || 'User'}</h3>
               <span>{user.email}</span>
             </div>
           </div>
@@ -138,7 +187,7 @@ const Profile = () => {
                   value={formData.fullname}
                   onChange={(e) => setFormData({...formData, fullname: e.target.value})}
                   disabled={!isEditing}
-                  className={!isEditing ? "readonly" : ""}
+                  className={!isEditing ? 'readonly' : ''}
                 />
               </div>
 
@@ -163,7 +212,7 @@ const Profile = () => {
                     setFormData({...formData, phone: val});
                   }}
                   disabled={!isEditing}
-                  className={!isEditing ? "readonly" : ""}
+                  className={!isEditing ? 'readonly' : ''}
                   placeholder="10-digit mobile number"
                 />
               </div>
@@ -175,7 +224,7 @@ const Profile = () => {
                   value={formData.dob}
                   onChange={(e) => setFormData({...formData, dob: e.target.value})}
                   disabled={!isEditing}
-                  className={!isEditing ? "readonly" : ""}
+                  className={!isEditing ? 'readonly' : ''}
                 />
               </div>
 
@@ -185,7 +234,7 @@ const Profile = () => {
                   value={formData.gender}
                   onChange={(e) => setFormData({...formData, gender: e.target.value})}
                   disabled={!isEditing}
-                  className={!isEditing ? "readonly" : ""}
+                  className={!isEditing ? 'readonly' : ''}
                 >
                   <option value="Select Gender" disabled>Select Gender</option>
                   <option value="Male">Male</option>

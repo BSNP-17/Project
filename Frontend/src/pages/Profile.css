@@ -13,7 +13,7 @@
   width: 95%;
   margin: 40px auto;
   display: grid;
-  grid-template-columns: 280px 1fr; /* Sidebar | Content */
+  grid-template-columns: 280px 1fr;
   gap: 30px;
   flex: 1;
 }
@@ -34,9 +34,29 @@
   text-align: center;
 }
 
+/* --- PROFILE PHOTO / AVATAR --- */
+.avatar-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.profile-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.25);
+  border: 3px solid #ff6b35;
+}
+
 .profile-avatar {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   background: #ff6b35;
   color: white;
   font-size: 1.8rem;
@@ -45,10 +65,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 15px;
   box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
 }
 
+/* Camera overlay on hover */
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.camera-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.avatar-overlay-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* --- SIDEBAR USER DETAILS --- */
 .sidebar-user-details h3 {
   font-size: 1.1rem;
   color: #1e293b;
@@ -184,7 +236,6 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
-/* Readonly state looks like plain text */
 .input-group input.readonly, .input-group select.readonly {
   background-color: #f8fafc;
   border-color: transparent;
@@ -200,7 +251,7 @@
 
 /* ACTION BUTTONS */
 .form-actions {
-  grid-column: 1 / -1; /* Span full width */
+  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: 15px;
@@ -235,17 +286,39 @@
   transform: translateY(-1px);
 }
 
+/* Loading */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #64748b;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .profile-container {
     grid-template-columns: 1fr;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-sidebar {
     margin-bottom: 20px;
+  }
+
+  .avatar-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .profile-photo,
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
   }
 }
