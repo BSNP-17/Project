@@ -3,18 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SuccessToast from '../components/SuccessToast';
 import './Profile.css';
 
 const Profile = () => {
-  // ✅ Extract 'login' from useAuth so we can update the global user state
   const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
 
-  // State for toggling Edit Mode
   const [isEditing, setIsEditing] = useState(false);
-  
-  // State for Active Tab (Sidebar)
-  const [activeTab, setActiveTab] = useState('info'); 
+  const [activeTab, setActiveTab] = useState('info');
+  const [showToast, setShowToast] = useState(false);
 
   const [formData, setFormData] = useState({
     fullname: '',
@@ -24,15 +22,15 @@ const Profile = () => {
     dob: ''
   });
 
-  // Load User Data
+  // Load user data — map phoneNumber (from registration) → phone
   useEffect(() => {
     if (user) {
       setFormData({
         fullname: user.fullname || '',
         email: user.email || '',
-        phone: user.phone || '9876543210', // Mock Data if missing
-        gender: user.gender || 'Male',
-        dob: user.dob || '1995-08-15'
+        phone: user.phone || user.phoneNumber || '',
+        gender: user.gender || 'Select Gender',
+        dob: user.dob || ''
       });
     } else if (!loading) {
       navigate('/login');
@@ -47,24 +45,21 @@ const Profile = () => {
   const handleSave = (e) => {
     e.preventDefault();
     setIsEditing(false);
-    
-    // 1. Get the existing user data and token from local storage
+
     const existingUserData = JSON.parse(localStorage.getItem('userData')) || {};
     const token = localStorage.getItem('token');
-    
-    // 2. Merge the old data with the new form data
+
     const updatedUser = {
       ...existingUserData,
       fullname: formData.fullname,
       phone: formData.phone,
+      phoneNumber: formData.phone,
       gender: formData.gender,
       dob: formData.dob
     };
 
-    // 3. Update localStorage and the global context at the same time!
-    login(updatedUser, token); 
-
-    alert("Profile Updated Successfully! ✅");
+    login(updatedUser, token);
+    setShowToast(true);
   };
 
   if (loading || !user) return <div className="loading-screen">Loading...</div>;
@@ -72,13 +67,11 @@ const Profile = () => {
   return (
     <div className="profile-page-wrapper">
       <Navbar />
-      
+
       <div className="profile-container">
-        
+
         {/* --- LEFT SIDEBAR --- */}
         <aside className="profile-sidebar">
-          
-          {/* User Brief */}
           <div className="sidebar-header">
             <div className="profile-avatar">
               {user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
@@ -89,31 +82,30 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Navigation Menu */}
           <nav className="sidebar-menu">
-            <button 
+            <button
               className={`menu-item ${activeTab === 'info' ? 'active' : ''}`}
               onClick={() => setActiveTab('info')}
             >
               👤 Personal Details
             </button>
-            
-            <button 
+
+            <button
               className="menu-item"
               onClick={() => navigate('/my-bookings')}
             >
               🎫 My Trips
             </button>
-            
-            <button 
+
+            <button
               className={`menu-item ${activeTab === 'wallet' ? 'active' : ''}`}
               onClick={() => setActiveTab('wallet')}
             >
               👛 Wallet (₹0)
             </button>
-            
+
             <div className="divider"></div>
-            
+
             <button className="menu-item logout" onClick={handleLogout}>
               🚪 Sign Out
             </button>
@@ -122,8 +114,6 @@ const Profile = () => {
 
         {/* --- RIGHT CONTENT AREA --- */}
         <main className="profile-content">
-          
-          {/* Header of the Card */}
           <div className="content-header">
             <div>
               <h2>Personal Information</h2>
@@ -136,15 +126,14 @@ const Profile = () => {
             )}
           </div>
 
-          {/* The Form */}
           <form className="profile-form" onSubmit={handleSave}>
             <div className="form-grid">
-              
+
               <div className="input-group">
                 <label>Full Name</label>
-                <input 
-                  type="text" 
-                  value={formData.fullname} 
+                <input
+                  type="text"
+                  value={formData.fullname}
                   onChange={(e) => setFormData({...formData, fullname: e.target.value})}
                   disabled={!isEditing}
                   className={!isEditing ? "readonly" : ""}
@@ -153,10 +142,10 @@ const Profile = () => {
 
               <div className="input-group">
                 <label>Email ID</label>
-                <input 
-                  type="email" 
-                  value={formData.email} 
-                  disabled={true} // Email usually can't be changed
+                <input
+                  type="email"
+                  value={formData.email}
+                  disabled={true}
                   className="readonly"
                 />
                 <span className="helper-text">Email cannot be changed</span>
@@ -164,19 +153,23 @@ const Profile = () => {
 
               <div className="input-group">
                 <label>Mobile Number</label>
-                <input 
-                  type="text" 
+                <input
+                  type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setFormData({...formData, phone: val});
+                  }}
                   disabled={!isEditing}
                   className={!isEditing ? "readonly" : ""}
+                  placeholder="10-digit mobile number"
                 />
               </div>
 
               <div className="input-group">
                 <label>Date of Birth</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={formData.dob}
                   onChange={(e) => setFormData({...formData, dob: e.target.value})}
                   disabled={!isEditing}
@@ -186,12 +179,13 @@ const Profile = () => {
 
               <div className="input-group">
                 <label>Gender</label>
-                <select 
+                <select
                   value={formData.gender}
                   onChange={(e) => setFormData({...formData, gender: e.target.value})}
                   disabled={!isEditing}
                   className={!isEditing ? "readonly" : ""}
                 >
+                  <option value="Select Gender" disabled>Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
@@ -200,7 +194,6 @@ const Profile = () => {
 
             </div>
 
-            {/* Action Buttons (Only show in Edit Mode) */}
             {isEditing && (
               <div className="form-actions">
                 <button type="button" className="cancel-btn" onClick={() => setIsEditing(false)}>
@@ -212,11 +205,17 @@ const Profile = () => {
               </div>
             )}
           </form>
-
         </main>
       </div>
-      
+
       <Footer />
+
+      {showToast && (
+        <SuccessToast
+          message="Profile Updated Successfully! ✅"
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

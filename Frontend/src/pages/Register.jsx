@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../api/authApi";
-import FloatingInput from '../components/FloatingInput'; // Fixed capitalization
+import FloatingInput from '../components/FloatingInput';
 import SuccessToast from "../components/SuccessToast";
-import './Auth.css'; 
+import './Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
-  // ✅ Added phoneNumber to initial state
   const [form, setForm] = useState({ fullname: "", email: "", password: "", phoneNumber: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -21,22 +21,63 @@ const Register = () => {
     setPasswordStrength(score);
   }, [form.password]);
 
+  const validate = () => {
+    const newErrors = {};
+
+    // Full Name
+    if (!form.fullname.trim()) {
+      newErrors.fullname = "Full name is required.";
+    } else if (form.fullname.trim().length < 3) {
+      newErrors.fullname = "Name must be at least 3 characters.";
+    }
+
+    // Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      newErrors.email = "Email address is required.";
+    } else if (!emailRegex.test(form.email.trim())) {
+      newErrors.email = "Enter a valid email address (e.g. name@example.com).";
+    }
+
+    // Phone Number — Indian standard: exactly 10 digits, starts with 6-9
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!form.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required.";
+    } else if (!phoneRegex.test(form.phoneNumber.trim())) {
+      newErrors.phoneNumber = "Enter a valid 10-digit Indian mobile number (starts with 6–9).";
+    }
+
+    // Password
+    if (!form.password) {
+      newErrors.password = "Password is required.";
+    } else if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
+    }
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
     try {
       setLoading(true);
       await authApi.register(form);
       setShowToast(true);
     } catch (err) {
       console.error("Registration Error:", err);
-      // ✅ FIX: Handle both String and Object error responses
       let errorMessage = "Registration failed. Please try again.";
       if (err.response && err.response.data) {
-          errorMessage = typeof err.response.data === 'string' 
-              ? err.response.data 
-              : (err.response.data.message || err.response.data.error || JSON.stringify(err.response.data));
+        errorMessage = typeof err.response.data === 'string'
+          ? err.response.data
+          : (err.response.data.message || err.response.data.error || JSON.stringify(err.response.data));
       }
-      alert(errorMessage);
+      setErrors({ server: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -58,13 +99,16 @@ const Register = () => {
             <p>It takes less than a minute.</p>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
+            {errors.server && <div className="alert-error">⚠️ {errors.server}</div>}
+
             <FloatingInput
               label="Full Name"
               name="fullname"
               icon="👤"
               value={form.fullname}
               onChange={(e) => setForm({...form, fullname: e.target.value})}
+              error={errors.fullname}
             />
 
             <FloatingInput
@@ -74,16 +118,21 @@ const Register = () => {
               icon="📧"
               value={form.email}
               onChange={(e) => setForm({...form, email: e.target.value})}
+              error={errors.email}
             />
 
-            {/* ✅ Added Phone Number Input */}
             <FloatingInput
               label="Phone Number"
               name="phoneNumber"
               type="tel"
               icon="📱"
               value={form.phoneNumber}
-              onChange={(e) => setForm({...form, phoneNumber: e.target.value})}
+              onChange={(e) => {
+                // Allow only digits, max 10
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setForm({...form, phoneNumber: val});
+              }}
+              error={errors.phoneNumber}
             />
 
             <FloatingInput
@@ -93,14 +142,15 @@ const Register = () => {
               icon="🔒"
               value={form.password}
               onChange={(e) => setForm({...form, password: e.target.value})}
+              error={errors.password}
             />
 
             {form.password && (
               <div className="strength-bar-container">
-                <div 
-                  className="strength-fill" 
+                <div
+                  className="strength-fill"
                   style={{
-                    width: `${passwordStrength}%`, 
+                    width: `${passwordStrength}%`,
                     backgroundColor: passwordStrength < 50 ? '#ef4444' : passwordStrength < 80 ? '#f59e0b' : '#22c55e'
                   }}
                 ></div>
@@ -110,7 +160,7 @@ const Register = () => {
               </div>
             )}
 
-            <button className="submit-btn" disabled={loading}>
+            <button className="submit-btn" type="submit" disabled={loading}>
               {loading ? "Creating..." : "Sign Up Free"}
             </button>
           </form>
@@ -120,8 +170,13 @@ const Register = () => {
           </p>
         </div>
       </div>
-      
-      {showToast && <SuccessToast onClose={() => navigate('/login')} />}
+
+      {showToast && (
+        <SuccessToast
+          message="Successfully Registered! 🎉"
+          onClose={() => navigate('/login')}
+        />
+      )}
     </div>
   );
 };
