@@ -5,6 +5,7 @@ import com.travelease.backend.models.User;
 import com.travelease.backend.repositories.BusRepository;
 import com.travelease.backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -23,13 +24,21 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired private PasswordEncoder passwordEncoder;
 
     // =====================================================
-    //   FIXED ADMIN CREDENTIALS — DO NOT SHARE PUBLICLY
+    //   Admin credentials loaded from application.properties
+    //   Override using environment variables:
+    //     ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_PHONE
     // =====================================================
-    private static final String ADMIN_FULLNAME     = "TravelEase Administrator";
-    private static final String ADMIN_USERNAME     = "te_admin_2025";
-    private static final String ADMIN_EMAIL        = "te.superadmin@travelease.in";
-    private static final String ADMIN_PHONE        = "+91-98451-77302";
-    private static final String ADMIN_PASSWORD_RAW = "TE@Admin#9281!";
+    @Value("${travelease.admin.fullname}")
+    private String adminFullname;
+
+    @Value("${travelease.admin.email}")
+    private String adminEmail;
+
+    @Value("${travelease.admin.phone}")
+    private String adminPhone;
+
+    @Value("${travelease.admin.password}")
+    private String adminPasswordRaw;
     // =====================================================
 
     private static final List<String> HUBS = Arrays.asList(
@@ -66,21 +75,19 @@ public class DataSeeder implements CommandLineRunner {
      * with the correct credentials even if DB is wiped and re-seeded.
      */
     private void seedAdminUser() {
-        Optional<User> existing = userRepository.findByEmail(ADMIN_EMAIL);
+        Optional<User> existing = userRepository.findByEmail(adminEmail);
 
         if (existing.isPresent()) {
-            // Admin already exists — ensure role is correct
             User admin = existing.get();
             admin.setRoles(new HashSet<>(Arrays.asList("ROLE_USER", "ROLE_ADMIN")));
             userRepository.save(admin);
             System.out.println("✅ DataSeeder: Admin account already exists — roles verified.");
         } else {
-            // Create fresh admin
             User admin = new User();
-            admin.setFullname(ADMIN_FULLNAME);
-            admin.setEmail(ADMIN_EMAIL);
-            admin.setPhoneNumber(ADMIN_PHONE);
-            admin.setPassword(passwordEncoder.encode(ADMIN_PASSWORD_RAW));
+            admin.setFullname(adminFullname);
+            admin.setEmail(adminEmail);
+            admin.setPhoneNumber(adminPhone);
+            admin.setPassword(passwordEncoder.encode(adminPasswordRaw));
             admin.setRoles(new HashSet<>(Arrays.asList("ROLE_USER", "ROLE_ADMIN")));
             admin.setEnabled(true);
             userRepository.save(admin);
@@ -88,9 +95,8 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("✅ DataSeeder: Admin account created successfully.");
             System.out.println("======================================================");
             System.out.println("  ADMIN LOGIN CREDENTIALS");
-            System.out.println("  Email    : " + ADMIN_EMAIL);
-            System.out.println("  Password : " + ADMIN_PASSWORD_RAW);
-            System.out.println("  Phone    : " + ADMIN_PHONE);
+            System.out.println("  Email    : " + adminEmail);
+            System.out.println("  Phone    : " + adminPhone);
             System.out.println("======================================================");
         }
     }
