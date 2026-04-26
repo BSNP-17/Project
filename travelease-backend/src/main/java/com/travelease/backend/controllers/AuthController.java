@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+// NOTE: Global CORS is configured in SecurityConfig. @CrossOrigin removed to avoid conflicts.
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -35,7 +35,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    // ─── SIGNUP ───────────────────────────────────────────────────────────────
+    // ─── SIGNUP ────────────────────────────────────────────────────────────────────────
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
         try {
@@ -57,7 +57,7 @@ public class AuthController {
         }
     }
 
-    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    // ─── LOGIN ──────────────────────────────────────────────────────────────────────────
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
@@ -83,7 +83,7 @@ public class AuthController {
         }
     }
 
-    // ─── OTP STEP 1: Send OTP to email ────────────────────────────────────────
+    // ─── OTP STEP 1: Send OTP to email ────────────────────────────────────────────────────
     @PostMapping("/forgot-password/send-otp")
     public ResponseEntity<?> sendOtp(@RequestBody ForgotPasswordRequest request) {
         try {
@@ -99,7 +99,7 @@ public class AuthController {
         }
     }
 
-    // ─── OTP STEP 2: Verify OTP ───────────────────────────────────────────────
+    // ─── OTP STEP 2: Verify OTP ─────────────────────────────────────────────────────────────
     @PostMapping("/forgot-password/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
         boolean valid = userService.verifyOtp(request.getEmail(), request.getOtp());
@@ -110,7 +110,7 @@ public class AuthController {
                 .body("Invalid or expired OTP. Please try again.");
     }
 
-    // ─── OTP STEP 3: Reset password after OTP verified ───────────────────────
+    // ─── OTP STEP 3: Reset password after OTP verified ─────────────────────────────────────
     @PutMapping("/forgot-password/reset")
     public ResponseEntity<?> resetPasswordWithOtp(@RequestBody ResetPasswordOtpRequest request) {
         try {
@@ -122,7 +122,7 @@ public class AuthController {
         }
     }
 
-    // ─── Legacy: check-email (kept for compatibility) ─────────────────────────
+    // ─── Legacy: check-email (kept for compatibility) ──────────────────────────────────────
     @GetMapping("/check-email")
     public ResponseEntity<?> checkEmail(@RequestParam String email) {
         if (userService.existsByEmail(email)) {
@@ -131,10 +131,17 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No account found with this email");
     }
 
-    // ─── Legacy: direct reset-password (kept for compatibility) ──────────────
+    // ─── Legacy: direct reset-password ──────────────────────────────────────────────────────
+    // SECURITY: This endpoint now verifies the OTP was already confirmed before allowing reset.
+    // Use the /forgot-password/send-otp → /verify-otp → /forgot-password/reset flow instead.
     @PutMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
         try {
+            // Guard: Require OTP verification before allowing password reset
+            if (!userService.isOtpVerified(request.getEmail())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("OTP verification required before resetting password.");
+            }
             if (!userService.existsByEmail(request.getEmail())) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No account found with this email");
             }
