@@ -15,14 +15,30 @@ const authApi = {
     return axiosClient.get('/users/me');
   },
 
-  // Forgot Password — Step 1: verify email exists
+  // ─── OTP Forgot Password ──────────────────────────────────────────────────
+
+  // Step 1: Send OTP to email
+  sendOtp: (email) => {
+    return axiosClient.post('/auth/forgot-password/send-otp', { email });
+  },
+
+  // Step 2: Verify OTP
+  verifyOtp: (data) => {
+    // data = { email, otp }
+    return axiosClient.post('/auth/forgot-password/verify-otp', data);
+  },
+
+  // Step 3: Reset password
+  resetPasswordWithOtp: (data) => {
+    // data = { email, newPassword }
+    return axiosClient.put('/auth/forgot-password/reset', data);
+  },
+
+  // Legacy (kept for compatibility)
   verifyEmailExists: (email) => {
     return axiosClient.get('/auth/check-email', { params: { email } });
   },
-
-  // Forgot Password — Step 2: reset password
   resetPassword: (data) => {
-    // data = { email, newPassword }
     return axiosClient.put('/auth/reset-password', data);
   },
 };

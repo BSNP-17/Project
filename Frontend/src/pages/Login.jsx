@@ -13,19 +13,22 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Forgot Password states
+  // ─── Forgot Password state ────────────────────────────────────────────────
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [fpStep, setFpStep] = useState(1); // 1 = enter email, 2 = set new password
+  const [fpStep, setFpStep] = useState(1); // 1=Email, 2=OTP, 3=New Password
   const [fpEmail, setFpEmail] = useState("");
+  const [fpOtp, setFpOtp] = useState("");
   const [fpNewPassword, setFpNewPassword] = useState("");
   const [fpConfirmPassword, setFpConfirmPassword] = useState("");
   const [fpError, setFpError] = useState("");
   const [fpLoading, setFpLoading] = useState(false);
   const [fpSuccess, setFpSuccess] = useState(false);
+  const [fpResendTimer, setFpResendTimer] = useState(0);
 
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // ─── Login handler ────────────────────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -47,40 +50,91 @@ const Login = () => {
     }
   };
 
+  // ─── Modal open/close ─────────────────────────────────────────────────────
   const openForgotModal = () => {
     setShowForgotModal(true);
     setFpStep(1);
     setFpEmail("");
+    setFpOtp("");
     setFpNewPassword("");
     setFpConfirmPassword("");
     setFpError("");
     setFpSuccess(false);
+    setFpResendTimer(0);
   };
 
-  const closeForgotModal = () => {
-    setShowForgotModal(false);
+  const closeForgotModal = () => setShowForgotModal(false);
+
+  // ─── Resend cooldown timer (30s) ──────────────────────────────────────────
+  const startResendTimer = () => {
+    setFpResendTimer(30);
+    const interval = setInterval(() => {
+      setFpResendTimer((prev) => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
-  const handleFpVerifyEmail = async (e) => {
+  // ─── STEP 1: Send OTP ─────────────────────────────────────────────────────
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setFpError("");
     if (!fpEmail) { setFpError("Please enter your email address."); return; }
     setFpLoading(true);
     try {
-      await authApi.verifyEmailExists(fpEmail);
+      await authApi.sendOtp(fpEmail);
       setFpStep(2);
+      startResendTimer();
     } catch (err) {
-      if (err.response && err.response.status === 404) {
+      if (err.response?.status === 404) {
         setFpError("No account found with this email address.");
       } else {
-        setFpError("Server error. Please try again later.");
+        setFpError("Failed to send OTP. Please try again.");
       }
     } finally {
       setFpLoading(false);
     }
   };
 
-  const handleFpResetPassword = async (e) => {
+  // ─── STEP 1 (Resend OTP) ──────────────────────────────────────────────────
+  const handleResendOtp = async () => {
+    if (fpResendTimer > 0) return;
+    setFpError("");
+    setFpLoading(true);
+    try {
+      await authApi.sendOtp(fpEmail);
+      setFpOtp("");
+      startResendTimer();
+    } catch {
+      setFpError("Failed to resend OTP. Please try again.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  // ─── STEP 2: Verify OTP ───────────────────────────────────────────────────
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setFpError("");
+    if (!fpOtp || fpOtp.length < 6) { setFpError("Please enter the 6-digit OTP."); return; }
+    setFpLoading(true);
+    try {
+      await authApi.verifyOtp({ email: fpEmail, otp: fpOtp });
+      setFpStep(3);
+    } catch (err) {
+      if (err.response?.status === 400) {
+        setFpError("Invalid or expired OTP. Please try again.");
+      } else {
+        setFpError("Server error. Please try again.");
+      }
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  // ─── STEP 3: Reset Password ───────────────────────────────────────────────
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setFpError("");
     if (!fpNewPassword || fpNewPassword.length < 6) {
@@ -91,14 +145,16 @@ const Login = () => {
     }
     setFpLoading(true);
     try {
-      await authApi.resetPassword({ email: fpEmail, newPassword: fpNewPassword });
+      await authApi.resetPasswordWithOtp({ email: fpEmail, newPassword: fpNewPassword });
       setFpSuccess(true);
     } catch (err) {
-      setFpError("Failed to reset password. Please try again.");
+      setFpError(err.response?.data || "Failed to reset password. Please try again.");
     } finally {
       setFpLoading(false);
     }
   };
+
+  const stepLabel = ["Enter Email", "Verify OTP", "New Password"];
 
   return (
     <div className="auth-page">
@@ -137,13 +193,8 @@ const Login = () => {
               icon="🔒"
             />
 
-            {/* Forgot Password Link */}
             <div className="forgot-password-row">
-              <button
-                type="button"
-                className="forgot-password-link"
-                onClick={openForgotModal}
-              >
+              <button type="button" className="forgot-password-link" onClick={openForgotModal}>
                 Forgot Password?
               </button>
             </div>
@@ -154,56 +205,60 @@ const Login = () => {
           </form>
 
           <div className="auth-footer">
-            <p>
-              Don&apos;t have an account? <Link to="/register">Sign Up</Link>
-            </p>
+            <p>Don&apos;t have an account? <Link to="/register">Sign Up</Link></p>
           </div>
         </div>
       </div>
 
-      {/* FORGOT PASSWORD MODAL */}
+      {/* ─── FORGOT PASSWORD MODAL ────────────────────────────────────────── */}
       {showForgotModal && (
         <div className="fp-modal-overlay" onClick={closeForgotModal}>
           <div className="fp-modal" onClick={(e) => e.stopPropagation()}>
             <button className="fp-modal-close" onClick={closeForgotModal}>✕</button>
 
             {fpSuccess ? (
+              // ─── SUCCESS STATE ───────────────────────────────────────────
               <div className="fp-success">
                 <div className="fp-success-icon">✅</div>
                 <h3>Password Reset Successful!</h3>
                 <p>Your password has been updated. You can now log in with your new password.</p>
-                <button
-                  className="submit-btn"
-                  onClick={() => { closeForgotModal(); }}
-                >
-                  Back to Login
-                </button>
+                <button className="submit-btn" onClick={closeForgotModal}>Back to Login</button>
               </div>
             ) : (
               <>
                 <div className="fp-modal-header">
                   <div className="fp-icon">🔑</div>
                   <h3>Reset Your Password</h3>
-                  <p>
-                    {fpStep === 1
-                      ? "Enter your registered email address."
-                      : `Setting new password for ${fpEmail}`}
+                  <p style={{ color: '#888', fontSize: '0.85rem' }}>
+                    {fpStep === 1 && "Enter your registered email to receive an OTP."}
+                    {fpStep === 2 && `OTP sent to ${fpEmail}`}
+                    {fpStep === 3 && `Set a new password for ${fpEmail}`}
                   </p>
                 </div>
 
                 {fpError && (
-                  <div className="alert-error" style={{ marginBottom: "16px" }}>⚠️ {fpError}</div>
+                  <div className="alert-error" style={{ marginBottom: '16px' }}>⚠️ {fpError}</div>
                 )}
 
-                {/* Step indicator */}
+                {/* Step indicator — 3 steps */}
                 <div className="fp-steps">
-                  <div className={`fp-step ${fpStep >= 1 ? "active" : ""}`}>1</div>
-                  <div className="fp-step-line"></div>
-                  <div className={`fp-step ${fpStep >= 2 ? "active" : ""}`}>2</div>
+                  {[1, 2, 3].map((s, i) => (
+                    <>
+                      <div
+                        key={s}
+                        className={`fp-step ${fpStep >= s ? 'active' : ''}`}
+                        title={stepLabel[i]}
+                      >
+                        {s}
+                      </div>
+                      {s < 3 && <div key={`line-${s}`} className="fp-step-line"></div>}
+                    </>
+                  ))}
                 </div>
 
-                {fpStep === 1 ? (
-                  <form onSubmit={handleFpVerifyEmail}>
+                {/* ─── STEP 1: Email ──────────────────────────────────────── */}
+                {fpStep === 1 && (
+                  <form onSubmit={handleSendOtp}>
                     <FloatingInput
                       label="Registered Email Address"
                       type="email"
@@ -212,11 +267,67 @@ const Login = () => {
                       icon="✉️"
                     />
                     <button type="submit" className="submit-btn" disabled={fpLoading}>
-                      {fpLoading ? "Verifying..." : "Continue"}
+                      {fpLoading ? "Sending OTP..." : "Send OTP"}
                     </button>
                   </form>
-                ) : (
-                  <form onSubmit={handleFpResetPassword}>
+                )}
+
+                {/* ─── STEP 2: OTP ─────────────────────────────────────────── */}
+                {fpStep === 2 && (
+                  <form onSubmit={handleVerifyOtp}>
+                    <div style={{ marginBottom: '8px' }}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={fpOtp}
+                        onChange={(e) => setFpOtp(e.target.value.replace(/\D/g, ""))}
+                        placeholder="Enter 6-digit OTP"
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px',
+                          fontSize: '1.4rem',
+                          letterSpacing: '0.5rem',
+                          textAlign: 'center',
+                          border: '1.5px solid #ddd',
+                          borderRadius: '10px',
+                          outline: 'none',
+                          fontWeight: '700',
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                    <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '0.82rem', color: '#888' }}>
+                      {fpResendTimer > 0
+                        ? `Resend OTP in ${fpResendTimer}s`
+                        : (
+                          <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={fpLoading}
+                            style={{ background: 'none', border: 'none', color: '#8e44ad', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}
+                          >
+                            🔄 Resend OTP
+                          </button>
+                        )
+                      }
+                    </div>
+                    <button type="submit" className="submit-btn" disabled={fpLoading || fpOtp.length < 6}>
+                      {fpLoading ? "Verifying..." : "Verify OTP"}
+                    </button>
+                    <button
+                      type="button"
+                      className="fp-back-btn"
+                      onClick={() => { setFpStep(1); setFpError(""); setFpOtp(""); }}
+                    >
+                      ← Back
+                    </button>
+                  </form>
+                )}
+
+                {/* ─── STEP 3: New Password ────────────────────────────────── */}
+                {fpStep === 3 && (
+                  <form onSubmit={handleResetPassword}>
                     <FloatingInput
                       label="New Password"
                       type="password"
@@ -233,13 +344,6 @@ const Login = () => {
                     />
                     <button type="submit" className="submit-btn" disabled={fpLoading}>
                       {fpLoading ? "Resetting..." : "Reset Password"}
-                    </button>
-                    <button
-                      type="button"
-                      className="fp-back-btn"
-                      onClick={() => { setFpStep(1); setFpError(""); }}
-                    >
-                      ← Back
                     </button>
                   </form>
                 )}
